@@ -64,6 +64,11 @@ namespace Projeto_Brigadeiro
             int DbExiste = 0;
             string baseDados = BaseDados.LocalBaseDados();
 
+            if (!Directory.Exists(Application.StartupPath + @"\db"))
+            {
+                Directory.CreateDirectory(Application.StartupPath + @"\db");
+            }
+
             if (File.Exists(baseDados))
             {
                 DbExiste = 1;
