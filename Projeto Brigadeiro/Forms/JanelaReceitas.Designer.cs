@@ -38,14 +38,14 @@
             this.txtPesquisar = new System.Windows.Forms.TextBox();
             this.lblReceita = new System.Windows.Forms.Label();
             this.dataView = new System.Windows.Forms.DataGridView();
+            this.BtnExcluir = new System.Windows.Forms.Button();
+            this.BtnNovaReceita = new System.Windows.Forms.Button();
+            this.BtnAtualizar = new System.Windows.Forms.Button();
             this.receita = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tempoPreparoHora = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tempoPreparoMinuto = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.preco = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.rendimento = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.BtnExcluir = new System.Windows.Forms.Button();
-            this.BtnNovaReceita = new System.Windows.Forms.Button();
-            this.BtnAtualizar = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.imgFundo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataView)).BeginInit();
             this.SuspendLayout();
@@ -167,36 +167,7 @@
             this.dataView.Size = new System.Drawing.Size(999, 533);
             this.dataView.TabIndex = 18;
             this.dataView.TabStop = false;
-            // 
-            // receita
-            // 
-            this.receita.HeaderText = "Receita";
-            this.receita.Name = "receita";
-            this.receita.ReadOnly = true;
-            // 
-            // tempoPreparoHora
-            // 
-            this.tempoPreparoHora.HeaderText = "Tempo de Preparo H";
-            this.tempoPreparoHora.Name = "tempoPreparoHora";
-            this.tempoPreparoHora.ReadOnly = true;
-            // 
-            // tempoPreparoMinuto
-            // 
-            this.tempoPreparoMinuto.HeaderText = "Tempo de Preparo M";
-            this.tempoPreparoMinuto.Name = "tempoPreparoMinuto";
-            this.tempoPreparoMinuto.ReadOnly = true;
-            // 
-            // preco
-            // 
-            this.preco.HeaderText = "Preço";
-            this.preco.Name = "preco";
-            this.preco.ReadOnly = true;
-            // 
-            // rendimento
-            // 
-            this.rendimento.HeaderText = "Rendimento";
-            this.rendimento.Name = "rendimento";
-            this.rendimento.ReadOnly = true;
+            this.dataView.SelectionChanged += new System.EventHandler(this.dataView_SelectionChanged);
             // 
             // BtnExcluir
             // 
@@ -240,6 +211,36 @@
             this.BtnAtualizar.UseVisualStyleBackColor = false;
             this.BtnAtualizar.Click += new System.EventHandler(this.BtnAtualizar_Click);
             // 
+            // receita
+            // 
+            this.receita.HeaderText = "Receita";
+            this.receita.Name = "receita";
+            this.receita.ReadOnly = true;
+            // 
+            // tempoPreparoHora
+            // 
+            this.tempoPreparoHora.HeaderText = "Tempo de Preparo H";
+            this.tempoPreparoHora.Name = "tempoPreparoHora";
+            this.tempoPreparoHora.ReadOnly = true;
+            // 
+            // tempoPreparoMinuto
+            // 
+            this.tempoPreparoMinuto.HeaderText = "Tempo de Preparo M";
+            this.tempoPreparoMinuto.Name = "tempoPreparoMinuto";
+            this.tempoPreparoMinuto.ReadOnly = true;
+            // 
+            // preco
+            // 
+            this.preco.HeaderText = "Preço";
+            this.preco.Name = "preco";
+            this.preco.ReadOnly = true;
+            // 
+            // rendimento
+            // 
+            this.rendimento.HeaderText = "Rendimento";
+            this.rendimento.Name = "rendimento";
+            this.rendimento.ReadOnly = true;
+            // 
             // JanelaReceitas
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -279,11 +280,11 @@
         private System.Windows.Forms.DataGridView dataView;
         private System.Windows.Forms.Button BtnExcluir;
         private System.Windows.Forms.Button BtnNovaReceita;
+        private System.Windows.Forms.Button BtnAtualizar;
         private System.Windows.Forms.DataGridViewTextBoxColumn receita;
         private System.Windows.Forms.DataGridViewTextBoxColumn tempoPreparoHora;
         private System.Windows.Forms.DataGridViewTextBoxColumn tempoPreparoMinuto;
         private System.Windows.Forms.DataGridViewTextBoxColumn preco;
         private System.Windows.Forms.DataGridViewTextBoxColumn rendimento;
-        private System.Windows.Forms.Button BtnAtualizar;
     }
 }

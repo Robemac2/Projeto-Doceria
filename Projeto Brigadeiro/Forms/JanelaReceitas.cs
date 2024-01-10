@@ -11,6 +11,8 @@ namespace Projeto_Brigadeiro
 {
     public partial class JanelaReceitas : Form
     {
+        private string _receitaNome;
+
         public JanelaReceitas()
         {
             InitializeComponent();
@@ -209,7 +211,40 @@ namespace Projeto_Brigadeiro
 
         private void BtnAtualizar_Click(object sender, EventArgs e)
         {
-            AtualizarPrecos();
+            try
+            {
+                JanelaNovaReceita janelaNovaReceita = new JanelaNovaReceita();
+                janelaNovaReceita._ehAtualizacao = true;
+
+                string baseDados = BaseDados.LocalBaseDados();
+                string strConection = BaseDados.StrConnection(baseDados);
+                SQLiteConnection con = new SQLiteConnection(strConection);
+
+                SQLiteCommand command = new SQLiteCommand();
+                command.Connection = con;
+                con.Open();
+
+                command.CommandText = "SELECT * FROM receitas WHERE nome= @nome";
+                command.Parameters.AddWithValue("@nome", _receitaNome);
+
+                DataTable ingredientes = new DataTable();
+                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
+
+                adapter.Fill(ingredientes);
+                con.Close();
+
+                janelaNovaReceita._receitaId = int.Parse(ingredientes.Rows[0]["receita_id"].ToString());
+
+                Thread t = new Thread(() => Application.Run(janelaNovaReceita));
+                t.Start();
+
+                Dispose();
+                Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao atualizar dados na tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+            }
         }
 
         private void AtualizarPrecos()
@@ -364,6 +399,11 @@ namespace Projeto_Brigadeiro
                     }
                 }
             }
+        }
+
+        private void dataView_SelectionChanged(object sender, EventArgs e)
+        {
+            _receitaNome = dataView.CurrentRow.Cells["receita"].Value.ToString();
         }
     }
 }
