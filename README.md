@@ -109,7 +109,9 @@ O projeto tem como objetivo criar um programa para ajudar no gerenciamento de um
 
 		- Depois de secionar todos od ingredientes, preencha o nome da receita, o tempo de preparo e quanto rende uma receita, depois é só clicar em **Salvar Receita**.
 
-		- Na versão atual, não é possível atualizar a receita, é necessário excluir a receita e criar uma nova.
+		- A partir da versão v0.2.0, é possível atualizar uma receita já cadastrada, basta selecionar a receita e clicar no botão **Atualizar**.
+
+		![image](https://github.com/Robemac2/Projeto-Doceria/assets/82005650/b788044f-871c-4988-aeb8-f2d1a80fd672)
 
 		- Apenas o usuário **master** pode excluir receitas cadastradas.
 
