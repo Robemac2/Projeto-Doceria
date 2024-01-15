@@ -350,7 +350,7 @@ namespace Projeto_Brigadeiro
 
             SQLiteConnection con = new SQLiteConnection(strConection);
 
-            string ingredienteNome = txtPesquisar.Text;
+            string ingredienteNome = txtPesquisar.Text.ToLower();
 
             if (ingredienteNome == "")
             {
@@ -365,7 +365,7 @@ namespace Projeto_Brigadeiro
 
                     SQLiteCommand command = new SQLiteCommand();
                     command.Connection = con;
-                    command.CommandText = "SELECT * FROM ingredientes WHERE nome LIKE @nome";
+                    command.CommandText = "SELECT * FROM ingredientes WHERE nome LIKE @nome COLLATE NOCASE";
                     command.Parameters.AddWithValue("@nome", "%" + ingredienteNome + "%");
 
                     command.ExecuteNonQuery();
