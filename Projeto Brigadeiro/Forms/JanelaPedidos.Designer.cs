@@ -31,7 +31,6 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(JanelaPedidos));
-            this.imgFundo = new System.Windows.Forms.PictureBox();
             this.BtnVoltar = new System.Windows.Forms.Button();
             this.dataView = new System.Windows.Forms.DataGridView();
             this.label5 = new System.Windows.Forms.Label();
@@ -49,19 +48,11 @@
             this.dataPedido = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            ((System.ComponentModel.ISupportInitialize)(this.imgFundo)).BeginInit();
+            this.imgFundo = new System.Windows.Forms.PictureBox();
+            this.CheckPedidosEmAberto = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataView)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.imgFundo)).BeginInit();
             this.SuspendLayout();
-            // 
-            // imgFundo
-            // 
-            this.imgFundo.BackgroundImage = global::Projeto_Brigadeiro.Properties.Resources.Bolo_Pedidos;
-            this.imgFundo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.imgFundo.Location = new System.Drawing.Point(-3, -5);
-            this.imgFundo.Name = "imgFundo";
-            this.imgFundo.Size = new System.Drawing.Size(1354, 739);
-            this.imgFundo.TabIndex = 0;
-            this.imgFundo.TabStop = false;
             // 
             // BtnVoltar
             // 
@@ -120,6 +111,7 @@
             this.dataView.Size = new System.Drawing.Size(845, 644);
             this.dataView.TabIndex = 22;
             this.dataView.TabStop = false;
+            this.dataView.SelectionChanged += new System.EventHandler(this.dataView_SelectionChanged);
             // 
             // label5
             // 
@@ -282,11 +274,34 @@
             this.status.Name = "status";
             this.status.ReadOnly = true;
             // 
+            // imgFundo
+            // 
+            this.imgFundo.BackgroundImage = global::Projeto_Brigadeiro.Properties.Resources.Bolo_Pedidos;
+            this.imgFundo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.imgFundo.Location = new System.Drawing.Point(-3, -5);
+            this.imgFundo.Name = "imgFundo";
+            this.imgFundo.Size = new System.Drawing.Size(1354, 739);
+            this.imgFundo.TabIndex = 0;
+            this.imgFundo.TabStop = false;
+            // 
+            // CheckPedidosEmAberto
+            // 
+            this.CheckPedidosEmAberto.AutoSize = true;
+            this.CheckPedidosEmAberto.Font = new System.Drawing.Font("Gabriola", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CheckPedidosEmAberto.Location = new System.Drawing.Point(525, 668);
+            this.CheckPedidosEmAberto.Name = "CheckPedidosEmAberto";
+            this.CheckPedidosEmAberto.Size = new System.Drawing.Size(332, 49);
+            this.CheckPedidosEmAberto.TabIndex = 47;
+            this.CheckPedidosEmAberto.Text = "Mostrar Apenas Pedidos em Aberto";
+            this.CheckPedidosEmAberto.UseVisualStyleBackColor = true;
+            this.CheckPedidosEmAberto.CheckedChanged += new System.EventHandler(this.CheckPedidosEmAberto_CheckedChanged);
+            // 
             // JanelaPedidos
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1350, 729);
+            this.Controls.Add(this.CheckPedidosEmAberto);
             this.Controls.Add(this.BtnCustomizado);
             this.Controls.Add(this.BtnStatus);
             this.Controls.Add(this.BtnFinalizar);
@@ -306,8 +321,8 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Projeto Brigadeiro";
             this.Load += new System.EventHandler(this.JanelaPedidos_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.imgFundo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataView)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.imgFundo)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -333,5 +348,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn dataPedido;
         private System.Windows.Forms.DataGridViewTextBoxColumn total;
         private System.Windows.Forms.DataGridViewTextBoxColumn status;
+        private System.Windows.Forms.CheckBox CheckPedidosEmAberto;
     }
 }

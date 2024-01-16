@@ -113,6 +113,16 @@ namespace Projeto_Brigadeiro.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Bolo_Novo_Pedido {
+            get {
+                object obj = ResourceManager.GetObject("Bolo_Novo_Pedido", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Bolo_Pedidos {
             get {
                 object obj = ResourceManager.GetObject("Bolo_Pedidos", resourceCulture);
@@ -126,16 +136,6 @@ namespace Projeto_Brigadeiro.Properties {
         internal static System.Drawing.Bitmap Bolo_Receitas {
             get {
                 object obj = ResourceManager.GetObject("Bolo_Receitas", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Foto_1 {
-            get {
-                object obj = ResourceManager.GetObject("Foto_1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
