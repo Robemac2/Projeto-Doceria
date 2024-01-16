@@ -75,6 +75,7 @@
             this.BtnVoltar.TabIndex = 21;
             this.BtnVoltar.Text = "Voltar";
             this.BtnVoltar.UseVisualStyleBackColor = false;
+            this.BtnVoltar.Click += new System.EventHandler(this.BtnVoltar_Click);
             // 
             // dataView
             // 
@@ -191,6 +192,7 @@
             this.BtnLimpar.TabIndex = 45;
             this.BtnLimpar.Text = "Limpar";
             this.BtnLimpar.UseVisualStyleBackColor = false;
+            this.BtnLimpar.Click += new System.EventHandler(this.BtnLimpar_Click);
             // 
             // BtnAdicionar
             // 
@@ -204,6 +206,7 @@
             this.BtnAdicionar.TabIndex = 44;
             this.BtnAdicionar.Text = "Adicionar / Atualizar";
             this.BtnAdicionar.UseVisualStyleBackColor = false;
+            this.BtnAdicionar.Click += new System.EventHandler(this.BtnAdicionar_Click);
             // 
             // BtnRemover
             // 
@@ -217,6 +220,7 @@
             this.BtnRemover.TabIndex = 43;
             this.BtnRemover.Text = "Remover";
             this.BtnRemover.UseVisualStyleBackColor = false;
+            this.BtnRemover.Click += new System.EventHandler(this.BtnRemover_Click);
             // 
             // txtCliente
             // 
@@ -251,6 +255,7 @@
             this.BtnSalvar.TabIndex = 48;
             this.BtnSalvar.Text = "Salvar Pedido";
             this.BtnSalvar.UseVisualStyleBackColor = false;
+            this.BtnSalvar.Click += new System.EventHandler(this.BtnSalvar_Click);
             // 
             // dataPicker
             // 
@@ -302,6 +307,7 @@
             this.Name = "JanelaNovoPedido";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Projeto Brigadeiro";
+            this.Load += new System.EventHandler(this.JanelaNovoPedido_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataView)).EndInit();
             this.ResumeLayout(false);

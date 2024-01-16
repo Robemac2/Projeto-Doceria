@@ -287,13 +287,15 @@
             // CheckPedidosEmAberto
             // 
             this.CheckPedidosEmAberto.AutoSize = true;
-            this.CheckPedidosEmAberto.Font = new System.Drawing.Font("Gabriola", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CheckPedidosEmAberto.Location = new System.Drawing.Point(525, 668);
+            this.CheckPedidosEmAberto.BackColor = System.Drawing.Color.Transparent;
+            this.CheckPedidosEmAberto.Font = new System.Drawing.Font("Gabriola", 21.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CheckPedidosEmAberto.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CheckPedidosEmAberto.Location = new System.Drawing.Point(472, 660);
             this.CheckPedidosEmAberto.Name = "CheckPedidosEmAberto";
-            this.CheckPedidosEmAberto.Size = new System.Drawing.Size(332, 49);
+            this.CheckPedidosEmAberto.Size = new System.Drawing.Size(385, 58);
             this.CheckPedidosEmAberto.TabIndex = 47;
             this.CheckPedidosEmAberto.Text = "Mostrar Apenas Pedidos em Aberto";
-            this.CheckPedidosEmAberto.UseVisualStyleBackColor = true;
+            this.CheckPedidosEmAberto.UseVisualStyleBackColor = false;
             this.CheckPedidosEmAberto.CheckedChanged += new System.EventHandler(this.CheckPedidosEmAberto_CheckedChanged);
             // 
             // JanelaPedidos

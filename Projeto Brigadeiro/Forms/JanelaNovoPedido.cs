@@ -16,5 +16,35 @@ namespace Projeto_Brigadeiro.Forms
         {
             InitializeComponent();
         }
+
+        private void JanelaNovoPedido_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void BtnVoltar_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void BtnLimpar_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void BtnRemover_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void BtnAdicionar_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void BtnSalvar_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

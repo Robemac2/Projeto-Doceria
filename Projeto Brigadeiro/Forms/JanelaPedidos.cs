@@ -21,6 +21,9 @@ namespace Projeto_Brigadeiro
         {
             lblRelatorio.Parent = imgFundo;
             lblRelatorio.BackColor = Color.Transparent;
+            CheckPedidosEmAberto.Parent = imgFundo;
+            CheckPedidosEmAberto.BackColor = Color.Transparent;
+
 
             ListarTabela();
         }
@@ -61,7 +64,7 @@ namespace Projeto_Brigadeiro
                 con.Close();
             }
 
-            this.dataView.Sort(this.dataView.Columns["pedido_id"], ListSortDirection.Ascending);
+            this.dataView.Sort(this.dataView.Columns["pedido"], ListSortDirection.Ascending);
         }
 
         private void ListarTabelaEmAberto()
@@ -102,7 +105,7 @@ namespace Projeto_Brigadeiro
                 con.Close();
             }
 
-            this.dataView.Sort(this.dataView.Columns["pedido_id"], ListSortDirection.Ascending);
+            this.dataView.Sort(this.dataView.Columns["pedido"], ListSortDirection.Ascending);
         }
 
         private void BtnVoltar_Click(object sender, EventArgs e)
