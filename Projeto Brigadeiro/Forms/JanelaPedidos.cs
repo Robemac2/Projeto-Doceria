@@ -24,7 +24,6 @@ namespace Projeto_Brigadeiro
             CheckPedidosEmAberto.Parent = imgFundo;
             CheckPedidosEmAberto.BackColor = Color.Transparent;
 
-
             ListarTabela();
         }
 
