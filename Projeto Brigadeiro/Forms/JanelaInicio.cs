@@ -42,7 +42,10 @@ namespace Projeto_Brigadeiro
 
         private void btnPedidos_Click(object sender, EventArgs e)
         {
-
+            Dispose();
+            Close();
+            Thread t = new Thread(() => Application.Run(new JanelaPedidos()));
+            t.Start();
         }
 
         private void btnConfiguracoes_Click(object sender, EventArgs e)

@@ -279,6 +279,7 @@
     <None Include="Assets\Images\Bolo_Menu.jpg" />
     <None Include="Assets\Images\Foto_1.jpg" />
     <None Include="Assets\Images\Foto_3.jpg" />
+    <None Include="Assets\Images\Bolo_Pedidos.jpg" />
     <Content Include="icone.ico" />
   </ItemGroup>
   <ItemGroup>

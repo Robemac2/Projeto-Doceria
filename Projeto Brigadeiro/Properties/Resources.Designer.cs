@@ -103,9 +103,9 @@ namespace Projeto_Brigadeiro.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Bolo_Log_In1 {
+        internal static System.Drawing.Bitmap Bolo_Menu {
             get {
-                object obj = ResourceManager.GetObject("Bolo_Log_In1", resourceCulture);
+                object obj = ResourceManager.GetObject("Bolo_Menu", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -113,9 +113,9 @@ namespace Projeto_Brigadeiro.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Bolo_Menu {
+        internal static System.Drawing.Bitmap Bolo_Pedidos {
             get {
-                object obj = ResourceManager.GetObject("Bolo_Menu", resourceCulture);
+                object obj = ResourceManager.GetObject("Bolo_Pedidos", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -143,29 +143,9 @@ namespace Projeto_Brigadeiro.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Foto_11 {
-            get {
-                object obj = ResourceManager.GetObject("Foto_11", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap Foto_3 {
             get {
                 object obj = ResourceManager.GetObject("Foto_3", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Foto_31 {
-            get {
-                object obj = ResourceManager.GetObject("Foto_31", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
