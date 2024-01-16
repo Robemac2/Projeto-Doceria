@@ -34,12 +34,6 @@
             this.imgFundo = new System.Windows.Forms.PictureBox();
             this.BtnVoltar = new System.Windows.Forms.Button();
             this.dataView = new System.Windows.Forms.DataGridView();
-            this.pedido = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cliente = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataPedido = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.total = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataEntrega = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.label5 = new System.Windows.Forms.Label();
             this.BtnNovo = new System.Windows.Forms.Button();
             this.BtnAlterar = new System.Windows.Forms.Button();
@@ -50,6 +44,11 @@
             this.BtnFinalizar = new System.Windows.Forms.Button();
             this.BtnStatus = new System.Windows.Forms.Button();
             this.BtnCustomizado = new System.Windows.Forms.Button();
+            this.pedido = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cliente = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataPedido = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.total = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.imgFundo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataView)).BeginInit();
             this.SuspendLayout();
@@ -101,7 +100,6 @@
             this.cliente,
             this.dataPedido,
             this.total,
-            this.dataEntrega,
             this.status});
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
@@ -122,42 +120,6 @@
             this.dataView.Size = new System.Drawing.Size(845, 644);
             this.dataView.TabIndex = 22;
             this.dataView.TabStop = false;
-            // 
-            // pedido
-            // 
-            this.pedido.HeaderText = "Pedido";
-            this.pedido.Name = "pedido";
-            this.pedido.ReadOnly = true;
-            // 
-            // cliente
-            // 
-            this.cliente.HeaderText = "Cliente";
-            this.cliente.Name = "cliente";
-            this.cliente.ReadOnly = true;
-            // 
-            // dataPedido
-            // 
-            this.dataPedido.HeaderText = "Data Pedido";
-            this.dataPedido.Name = "dataPedido";
-            this.dataPedido.ReadOnly = true;
-            // 
-            // total
-            // 
-            this.total.HeaderText = "Total";
-            this.total.Name = "total";
-            this.total.ReadOnly = true;
-            // 
-            // dataEntrega
-            // 
-            this.dataEntrega.HeaderText = "Data Entrega";
-            this.dataEntrega.Name = "dataEntrega";
-            this.dataEntrega.ReadOnly = true;
-            // 
-            // status
-            // 
-            this.status.HeaderText = "Status";
-            this.status.Name = "status";
-            this.status.ReadOnly = true;
             // 
             // label5
             // 
@@ -290,6 +252,36 @@
             this.BtnCustomizado.UseVisualStyleBackColor = false;
             this.BtnCustomizado.Click += new System.EventHandler(this.BtnCustomizado_Click);
             // 
+            // pedido
+            // 
+            this.pedido.HeaderText = "Pedido";
+            this.pedido.Name = "pedido";
+            this.pedido.ReadOnly = true;
+            // 
+            // cliente
+            // 
+            this.cliente.HeaderText = "Cliente";
+            this.cliente.Name = "cliente";
+            this.cliente.ReadOnly = true;
+            // 
+            // dataPedido
+            // 
+            this.dataPedido.HeaderText = "Data Pedido";
+            this.dataPedido.Name = "dataPedido";
+            this.dataPedido.ReadOnly = true;
+            // 
+            // total
+            // 
+            this.total.HeaderText = "Total";
+            this.total.Name = "total";
+            this.total.ReadOnly = true;
+            // 
+            // status
+            // 
+            this.status.HeaderText = "Status";
+            this.status.Name = "status";
+            this.status.ReadOnly = true;
+            // 
             // JanelaPedidos
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -335,12 +327,11 @@
         private System.Windows.Forms.Label lblRelatorio;
         private System.Windows.Forms.Button BtnFinalizar;
         private System.Windows.Forms.Button BtnStatus;
+        private System.Windows.Forms.Button BtnCustomizado;
         private System.Windows.Forms.DataGridViewTextBoxColumn pedido;
         private System.Windows.Forms.DataGridViewTextBoxColumn cliente;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataPedido;
         private System.Windows.Forms.DataGridViewTextBoxColumn total;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataEntrega;
         private System.Windows.Forms.DataGridViewTextBoxColumn status;
-        private System.Windows.Forms.Button BtnCustomizado;
     }
 }
