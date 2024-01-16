@@ -142,7 +142,7 @@ namespace Projeto_Brigadeiro
                 command.ExecuteNonQuery();
 
                 command.CommandText = "CREATE TABLE pedidos ( pedido_id INTEGER NOT NULL UNIQUE, cliente TEXT NOT NULL,"
-                                        + "total TEXT NOT NULL, data TEXT NOT NULL,"
+                                        + "data TEXT NOT NULL, total TEXT NOT NULL, status TEXT NOT NULL,"
                                         + "PRIMARY KEY( pedido_id AUTOINCREMENT))";
                 command.ExecuteNonQuery();
 
