@@ -85,7 +85,15 @@ namespace Projeto_Brigadeiro.Forms
 
         private void BtnRemover_Click(object sender, EventArgs e)
         {
+            DialogResult resultado = MessageBox.Show("Você tem certexa que deseja remover o produto?\n\n" + dataView.CurrentRow.Cells["produto"].Value.ToString(), "SQLite", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+            if (resultado == DialogResult.No)
+            {
+                return;
+            }
 
+            dataView.Rows.RemoveAt(dataView.CurrentCell.RowIndex);
+
+            Limpar();
         }
 
         private void BtnAdicionar_Click(object sender, EventArgs e)
