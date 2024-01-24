@@ -131,13 +131,48 @@ namespace Projeto_Brigadeiro
 
         private void BtnAlterar_Click(object sender, EventArgs e)
         {
-            Dispose();
-            Close();
-            JanelaNovoPedido janelaNovoPedido = new JanelaNovoPedido();
-            janelaNovoPedido._ehAtualizacao = true;
-            janelaNovoPedido._pedidoId = _pedidoId;
-            Thread t = new Thread(() => Application.Run(janelaNovoPedido));
-            t.Start();
+            string baseDados = BaseDados.LocalBaseDados();
+            string strConection = BaseDados.StrConnection(baseDados);
+
+            SQLiteConnection con = new SQLiteConnection(strConection);
+
+            try
+            {
+                SQLiteCommand command = new SQLiteCommand();
+                command.Connection = con;
+                command.CommandText = "SELECT * FROM pedidos WHERE pedido_id= @pedido_id";
+                command.Parameters.AddWithValue("@pedido_id", _pedidoId);
+
+                DataTable pedidos = new DataTable();
+                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
+
+                con.Open();
+
+                adapter.Fill(pedidos);
+
+                if (pedidos.Rows[0]["status"].ToString() == "Aberto")
+                {
+                    Dispose();
+                    Close();
+                    JanelaNovoPedido janelaNovoPedido = new JanelaNovoPedido();
+                    janelaNovoPedido._ehAtualizacao = true;
+                    janelaNovoPedido._pedidoId = _pedidoId;
+                    Thread t = new Thread(() => Application.Run(janelaNovoPedido));
+                    t.Start();
+                }
+                else
+                {
+                    MessageBox.Show("Pedido não esta Aberto.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao ler dados da tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+            }
+            finally
+            {
+                con.Close();
+            }
         }
 
         private void BtnFinalizar_Click(object sender, EventArgs e)
