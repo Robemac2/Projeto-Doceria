@@ -50,6 +50,8 @@ namespace Projeto_Brigadeiro
 
                 command.Dispose();
 
+                dataView.Rows.Clear();
+
                 foreach (DataRow pedido in pedidos.Rows)
                 {
                     dataView.Rows.Add(pedido.ItemArray);
@@ -91,6 +93,8 @@ namespace Projeto_Brigadeiro
 
                 command.Dispose();
 
+                dataView.Rows.Clear();
+
                 foreach (DataRow pedido in pedidos.Rows)
                 {
                     dataView.Rows.Add(pedido.ItemArray);
@@ -126,7 +130,13 @@ namespace Projeto_Brigadeiro
 
         private void BtnAlterar_Click(object sender, EventArgs e)
         {
-
+            Dispose();
+            Close();
+            JanelaNovoPedido janelaNovoPedido = new JanelaNovoPedido();
+            janelaNovoPedido._ehAtualizacao = true;
+            janelaNovoPedido._pedidoId = _pedidoId;
+            Thread t = new Thread(() => Application.Run(janelaNovoPedido));
+            t.Start();
         }
 
         private void BtnFinalizar_Click(object sender, EventArgs e)

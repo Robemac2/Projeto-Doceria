@@ -10,8 +10,8 @@ namespace Projeto_Brigadeiro.Forms
 {
     public partial class JanelaNovoPedido : Form
     {
-        private bool _ehAtualizacao = false;
-        private int _pedidoId;
+        public bool _ehAtualizacao = false;
+        public int _pedidoId;
         public JanelaNovoPedido()
         {
             InitializeComponent();
@@ -33,6 +33,79 @@ namespace Projeto_Brigadeiro.Forms
             txtTotal.Text = "R$ " + 0.ToString("N2");
             ListarIngredientes();
             Limpar();
+            AtualizarPedido();
+        }
+
+        private void AtualizarPedido()
+        {
+            if (_ehAtualizacao)
+            {
+                string baseDados = BaseDados.LocalBaseDados();
+                string strConection = BaseDados.StrConnection(baseDados);
+
+                SQLiteConnection con = new SQLiteConnection(strConection);
+
+                try
+                {
+                    con.Open();
+
+                    SQLiteCommand command = new SQLiteCommand();
+                    command.Connection = con;
+                    command.CommandText = "SELECT * FROM pedidos_receitas WHERE pedido_id= @pedido_id";
+                    command.Parameters.AddWithValue("@pedido_id", _pedidoId);
+
+                    command.ExecuteNonQuery();
+
+                    DataTable receitas = new DataTable();
+                    SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
+
+                    adapter.Fill(receitas);
+
+                    command.Dispose();
+
+                    con.Close();
+
+                    for (int i = 0; i < receitas.Rows.Count; i++)
+                    {
+                        string baseDados2 = BaseDados.LocalBaseDados();
+                        string strConection2 = BaseDados.StrConnection(baseDados2);
+
+                        SQLiteConnection con2 = new SQLiteConnection(strConection2);
+
+                        con2.Open();
+
+                        SQLiteCommand command2 = new SQLiteCommand();
+                        command2.Connection = con2;
+                        command2.CommandText = "SELECT * FROM receitas WHERE receita_id= @receita_id";
+                        command2.Parameters.AddWithValue("@receita_id", int.Parse(receitas.Rows[i]["receita_id"].ToString()));
+
+                        command2.ExecuteNonQuery();
+
+                        DataTable receitasNomes = new DataTable();
+                        SQLiteDataAdapter adapter2 = new SQLiteDataAdapter(command2);
+
+                        adapter2.Fill(receitasNomes);
+
+                        command2.Dispose();
+
+                        con2.Close();
+
+                        dataView.Rows.Add();
+
+                        dataView.Rows[i].Cells["produto"].Value = receitasNomes.Rows[0]["nome"].ToString();
+                        dataView.Rows[i].Cells["quantidade"].Value = receitas.Rows[i]["quantidade"].ToString();
+                        dataView.Rows[i].Cells["preco"].Value = receitas.Rows[i]["preco"].ToString();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Erro ao consultar dados na tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
         }
 
         private void ListarIngredientes()
