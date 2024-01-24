@@ -10,6 +10,7 @@ namespace Projeto_Brigadeiro.Forms
 {
     public partial class JanelaNovoPedido : Form
     {
+        private bool _ativarDataGrid = false;
         public bool _ehAtualizacao = false;
         public int _pedidoId;
         public JanelaNovoPedido()
@@ -34,6 +35,8 @@ namespace Projeto_Brigadeiro.Forms
             ListarIngredientes();
             Limpar();
             AtualizarPedido();
+            AtualizarDataGrid();
+            _ativarDataGrid = true;
         }
 
         private void AtualizarPedido()
@@ -65,30 +68,56 @@ namespace Projeto_Brigadeiro.Forms
 
                     con.Close();
 
+                    string baseDados2 = BaseDados.LocalBaseDados();
+                    string strConection2 = BaseDados.StrConnection(baseDados2);
+
+                    SQLiteConnection con2 = new SQLiteConnection(strConection2);
+
+                    con2.Open();
+
+                    SQLiteCommand command2 = new SQLiteCommand();
+                    command2.Connection = con2;
+                    command2.CommandText = "SELECT * FROM pedidos WHERE pedido_id= @pedido_id";
+                    command2.Parameters.AddWithValue("@pedido_id", _pedidoId);
+
+                    command2.ExecuteNonQuery();
+
+                    DataTable cliente = new DataTable();
+                    SQLiteDataAdapter adapter2 = new SQLiteDataAdapter(command2);
+
+                    adapter2.Fill(cliente);
+
+                    command2.Dispose();
+
+                    con2.Close();
+
+                    txtCliente.Text = cliente.Rows[0]["cliente"].ToString();
+                    txtCliente.Enabled = false;
+
                     for (int i = 0; i < receitas.Rows.Count; i++)
                     {
-                        string baseDados2 = BaseDados.LocalBaseDados();
-                        string strConection2 = BaseDados.StrConnection(baseDados2);
+                        string baseDados3 = BaseDados.LocalBaseDados();
+                        string strConection3 = BaseDados.StrConnection(baseDados3);
 
-                        SQLiteConnection con2 = new SQLiteConnection(strConection2);
+                        SQLiteConnection con3 = new SQLiteConnection(strConection3);
 
-                        con2.Open();
+                        con3.Open();
 
-                        SQLiteCommand command2 = new SQLiteCommand();
-                        command2.Connection = con2;
-                        command2.CommandText = "SELECT * FROM receitas WHERE receita_id= @receita_id";
-                        command2.Parameters.AddWithValue("@receita_id", int.Parse(receitas.Rows[i]["receita_id"].ToString()));
+                        SQLiteCommand command3 = new SQLiteCommand();
+                        command3.Connection = con3;
+                        command3.CommandText = "SELECT * FROM receitas WHERE receita_id= @receita_id";
+                        command3.Parameters.AddWithValue("@receita_id", int.Parse(receitas.Rows[i]["receita_id"].ToString()));
 
-                        command2.ExecuteNonQuery();
+                        command3.ExecuteNonQuery();
 
                         DataTable receitasNomes = new DataTable();
-                        SQLiteDataAdapter adapter2 = new SQLiteDataAdapter(command2);
+                        SQLiteDataAdapter adapter3 = new SQLiteDataAdapter(command3);
 
-                        adapter2.Fill(receitasNomes);
+                        adapter3.Fill(receitasNomes);
 
-                        command2.Dispose();
+                        command3.Dispose();
 
-                        con2.Close();
+                        con3.Close();
 
                         dataView.Rows.Add();
 
@@ -315,7 +344,7 @@ namespace Projeto_Brigadeiro.Forms
                         command2.CommandText = "UPDATE pedidos_receitas SET pedido_id= @pedido_id, receita_id= @receita_id, quantidade= @quantidade, "
                                         + "preco= @preco WHERE pedido_id= @pedido_id AND receita_id= @receita_id";
                         command2.Parameters.AddWithValue("@pedido_id", _pedidoId);
-                        command2.Parameters.AddWithValue("@receita_id", int.Parse(pedido.Rows[0]["rceita_id"].ToString()));
+                        command2.Parameters.AddWithValue("@receita_id", int.Parse(pedido.Rows[0]["receita_id"].ToString()));
                         command2.Parameters.AddWithValue("@quantidade", int.Parse(row.Cells["quantidade"].Value.ToString()));
                         command2.Parameters.AddWithValue("@preco", row.Cells["preco"].Value.ToString());
                     }
@@ -385,6 +414,20 @@ namespace Projeto_Brigadeiro.Forms
                     t.Text = 0.ToString("N0");
                 }
                 e.Handled = true;
+            }
+        }
+
+        private void dataView_SelectionChanged(object sender, EventArgs e)
+        {
+            if (_ativarDataGrid)
+            {
+                if (dataView.Rows.Count == 0)
+                {
+                    Limpar();
+                    return;
+                }
+                comboReceita.SelectedIndex = comboReceita.FindStringExact(dataView.CurrentRow.Cells["produto"].Value.ToString());
+                txtQuantidade.Text = dataView.CurrentRow.Cells["quantidade"].Value.ToString();
             }
         }
     }

@@ -120,6 +120,7 @@
             this.dataView.Size = new System.Drawing.Size(810, 615);
             this.dataView.TabIndex = 22;
             this.dataView.TabStop = false;
+            this.dataView.SelectionChanged += new System.EventHandler(this.dataView_SelectionChanged);
             // 
             // produto
             // 
