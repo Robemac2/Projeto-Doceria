@@ -235,7 +235,6 @@
             this.txtCliente.Name = "txtCliente";
             this.txtCliente.Size = new System.Drawing.Size(341, 40);
             this.txtCliente.TabIndex = 46;
-            this.txtCliente.TextChanged += new System.EventHandler(this.txtCliente_TextChanged);
             // 
             // lblCliente
             // 
@@ -275,7 +274,6 @@
             this.dataPicker.Name = "dataPicker";
             this.dataPicker.Size = new System.Drawing.Size(200, 40);
             this.dataPicker.TabIndex = 49;
-            this.dataPicker.ValueChanged += new System.EventHandler(this.dataPicker_ValueChanged);
             // 
             // lblData
             // 
@@ -291,6 +289,7 @@
             // txtTotal
             // 
             this.txtTotal.BackColor = System.Drawing.SystemColors.Window;
+            this.txtTotal.Enabled = false;
             this.txtTotal.Font = new System.Drawing.Font("Gabriola", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtTotal.ForeColor = System.Drawing.SystemColors.ControlText;
             this.txtTotal.Location = new System.Drawing.Point(997, 511);
@@ -298,7 +297,6 @@
             this.txtTotal.ReadOnly = true;
             this.txtTotal.Size = new System.Drawing.Size(341, 40);
             this.txtTotal.TabIndex = 51;
-            this.txtTotal.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // lblTotal
             // 

@@ -10,6 +10,8 @@ namespace Projeto_Brigadeiro.Forms
 {
     public partial class JanelaNovoPedido : Form
     {
+        private bool _ehAtualizacao = false;
+        private int _pedidoId;
         public JanelaNovoPedido()
         {
             InitializeComponent();
@@ -28,6 +30,7 @@ namespace Projeto_Brigadeiro.Forms
             lblTotal.Parent = imgFundo;
             lblTotal.BackColor = Color.Transparent;
 
+            txtTotal.Text = "R$ " + 0.ToString("N2");
             ListarIngredientes();
             Limpar();
         }
@@ -153,7 +156,124 @@ namespace Projeto_Brigadeiro.Forms
 
         private void BtnSalvar_Click(object sender, EventArgs e)
         {
+            if (dataView.Rows.Count == 0)
+            {
+                MessageBox.Show("Erro ao salvar, o pedido precisa conter ao menos UM produto.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                return;
+            }
+            else if (txtCliente.Text == "")
+            {
+                MessageBox.Show("Erro ao salvar, o pedido precisa conter UM cliente.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                return;
+            }
 
+            string baseDados = BaseDados.LocalBaseDados();
+            string strConection = BaseDados.StrConnection(baseDados);
+
+            SQLiteConnection con = new SQLiteConnection(strConection);
+
+            string clienteNome = txtCliente.Text;
+            string pedidoPreco = txtTotal.Text;
+            string pedidoStatus = "Aberto";
+            string pedidoData = dataPicker.Value.ToShortDateString();
+
+            try
+            {
+                con.Open();
+
+                SQLiteCommand command = new SQLiteCommand();
+                command.Connection = con;
+
+                if (_ehAtualizacao)
+                {
+                    command.CommandText = "UPDATE pedidos SET cliente= @cliente,"
+                                            + "data= @data, total= @total, status= @status "
+                                            + "WHERE pedido_id= @pedido_id";
+                    command.Parameters.AddWithValue("@cliente", clienteNome);
+                    command.Parameters.AddWithValue("@data", pedidoData);
+                    command.Parameters.AddWithValue("@total", pedidoPreco);
+                    command.Parameters.AddWithValue("@status", pedidoStatus);
+                    command.Parameters.AddWithValue("@pedido_id", _pedidoId);
+                }
+                else
+                {
+                    command.CommandText = "INSERT INTO pedidos (cliente, data, total, status) "
+                                        + "VALUES (@cliente, @data, @total, @status)";
+                    command.Parameters.AddWithValue("@cliente", clienteNome);
+                    command.Parameters.AddWithValue("@data", pedidoData);
+                    command.Parameters.AddWithValue("@total", pedidoPreco);
+                    command.Parameters.AddWithValue("@status", pedidoStatus);
+                }
+
+                command.ExecuteNonQuery();
+
+                if (!_ehAtualizacao)
+                {
+                    command.CommandText = "SELECT COUNT(*) FROM pedidos";
+
+                    _pedidoId = int.Parse(command.ExecuteScalar().ToString());
+                }
+
+                con.Close();
+
+                foreach (DataGridViewRow row in dataView.Rows)
+                {
+                    string baseDados2 = BaseDados.LocalBaseDados();
+                    string strConection2 = BaseDados.StrConnection(baseDados2);
+
+                    SQLiteConnection con2 = new SQLiteConnection(strConection2);
+
+                    SQLiteCommand command2 = new SQLiteCommand();
+                    command2.Connection = con2;
+
+                    con2.Open();
+
+                    command2.CommandText = "SELECT * FROM receitas WHERE nome= @nome";
+                    string receitaNome = row.Cells["produto"].Value.ToString();
+                    command2.Parameters.AddWithValue("@nome", receitaNome);
+
+                    DataTable pedido = new DataTable();
+                    SQLiteDataAdapter adapter2 = new SQLiteDataAdapter(command2);
+
+                    adapter2.Fill(pedido);
+
+                    if (_ehAtualizacao)
+                    {
+                        command2.CommandText = "UPDATE pedidos_receitas SET pedido_id= @pedido_id, receita_id= @receita_id, quantidade= @quantidade, "
+                                        + "preco= @preco WHERE pedido_id= @pedido_id AND receita_id= @receita_id";
+                        command2.Parameters.AddWithValue("@pedido_id", _pedidoId);
+                        command2.Parameters.AddWithValue("@receita_id", int.Parse(pedido.Rows[0]["rceita_id"].ToString()));
+                        command2.Parameters.AddWithValue("@quantidade", int.Parse(row.Cells["quantidade"].Value.ToString()));
+                        command2.Parameters.AddWithValue("@preco", row.Cells["preco"].Value.ToString());
+                    }
+                    else
+                    {
+                        command2.CommandText = "INSERT INTO pedidos_receitas (pedido_id, receita_id, quantidade, preco) "
+                                        + "VALUES (@pedido_id, @receita_id, @quantidade, @preco)";
+                        command2.Parameters.AddWithValue("@pedido_id", _pedidoId);
+                        command2.Parameters.AddWithValue("@receita_id", int.Parse(pedido.Rows[0]["receita_id"].ToString()));
+                        command2.Parameters.AddWithValue("@quantidade", int.Parse(row.Cells["quantidade"].Value.ToString()));
+                        command2.Parameters.AddWithValue("@preco", row.Cells["preco"].Value.ToString());
+                    }
+
+                    command2.ExecuteNonQuery();
+
+                    con2.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao salvar pedido.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+            }
+            finally
+            {
+                con.Close();
+            }
+
+            Dispose();
+            Close();
+            Thread t = new Thread(() => Application.Run(new JanelaPedidos()));
+            t.Start();
         }
 
         private void TxtQuantidade_KeyPress(object sender, KeyPressEventArgs e)
@@ -193,21 +313,6 @@ namespace Projeto_Brigadeiro.Forms
                 }
                 e.Handled = true;
             }
-        }
-
-        private void txtCliente_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void dataPicker_ValueChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }
