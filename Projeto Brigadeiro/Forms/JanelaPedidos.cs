@@ -1,8 +1,9 @@
 ﻿using Projeto_Brigadeiro.Class;
+using Projeto_Brigadeiro.Forms;
 using System;
 using System.ComponentModel;
-using System.Data.SQLite;
 using System.Data;
+using System.Data.SQLite;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
@@ -117,7 +118,10 @@ namespace Projeto_Brigadeiro
 
         private void BtnNovo_Click(object sender, EventArgs e)
         {
-
+            Dispose();
+            Close();
+            Thread t = new Thread(() => Application.Run(new JanelaNovoPedido()));
+            t.Start();
         }
 
         private void BtnAlterar_Click(object sender, EventArgs e)

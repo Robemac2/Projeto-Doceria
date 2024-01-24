@@ -1,14 +1,8 @@
 ﻿using Projeto_Brigadeiro.Class;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Data.SQLite;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Projeto_Brigadeiro.Forms
@@ -98,7 +92,39 @@ namespace Projeto_Brigadeiro.Forms
 
         private void BtnAdicionar_Click(object sender, EventArgs e)
         {
+            string produto = comboReceita.Text;
+            string quantidade = txtQuantidade.Text;
+            string preco = BaseDados.PrecoProduto(produto, quantidade);
 
+            if (preco != "Conversão Indevida")
+            {
+                bool produtoExiste = false;
+                int index = -1;
+
+                foreach (DataGridViewRow item in dataView.Rows)
+                {
+                    if (item.Cells[0].Value != null && item.Cells[0].Value.ToString() == produto)
+                    {
+                        produtoExiste = true;
+                        index = item.Cells[0].RowIndex;
+                        break;
+                    }
+                }
+
+                if (produtoExiste)
+                {
+                    dataView.Rows.RemoveAt(index);
+                }
+
+                dataView.Rows.Add(produto, quantidade, preco);
+
+                Limpar();
+                AtualizarDataGrid();
+
+                return;
+            }
+
+            MessageBox.Show("Erro ao calcular o preço do ingrediente.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
         }
 
         private void BtnSalvar_Click(object sender, EventArgs e)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data.SQLite;
-using System.IO;
 using System.Windows.Forms;
 
 namespace Projeto_Brigadeiro.Class
@@ -183,7 +182,7 @@ namespace Projeto_Brigadeiro.Class
                 reader.Read();
 
                 receitaRendimento = int.Parse(reader["rendimento"].ToString());
-                receitaPreco = double.Parse(reader["preco"].ToString().Remove(0,3));
+                receitaPreco = double.Parse(reader["preco"].ToString().Remove(0, 3));
 
                 command.Dispose();
                 reader.Close();

@@ -15,7 +15,7 @@ namespace Projeto_Brigadeiro
         public float CustoSalario { get; private set; }
         public int Dias { get; private set; }
         public DateTime Horas { get; private set; }
-        public float CustoGeral {  get; private set; }
+        public float CustoGeral { get; private set; }
         public float Lucro { get; private set; }
 
         public Custo(float custoEnergia, float custoAgua, float custoGas, float custoSalario, int dias, DateTime horas, float custoGeral, float lucro)
