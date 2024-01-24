@@ -31,7 +31,7 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(JanelaNovoPedido));
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.imgFundo = new System.Windows.Forms.PictureBox();
             this.BtnVoltar = new System.Windows.Forms.Button();
             this.dataView = new System.Windows.Forms.DataGridView();
             this.produto = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -49,19 +49,21 @@
             this.BtnSalvar = new System.Windows.Forms.Button();
             this.dataPicker = new System.Windows.Forms.DateTimePicker();
             this.lblData = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.txtTotal = new System.Windows.Forms.TextBox();
+            this.lblTotal = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.imgFundo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataView)).BeginInit();
             this.SuspendLayout();
             // 
-            // pictureBox1
+            // imgFundo
             // 
-            this.pictureBox1.BackgroundImage = global::Projeto_Brigadeiro.Properties.Resources.Bolo_Novo_Pedido;
-            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.pictureBox1.Location = new System.Drawing.Point(-4, -6);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(1356, 740);
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
+            this.imgFundo.BackgroundImage = global::Projeto_Brigadeiro.Properties.Resources.Bolo_Novo_Pedido;
+            this.imgFundo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.imgFundo.Location = new System.Drawing.Point(-4, -6);
+            this.imgFundo.Name = "imgFundo";
+            this.imgFundo.Size = new System.Drawing.Size(1356, 740);
+            this.imgFundo.TabIndex = 0;
+            this.imgFundo.TabStop = false;
             // 
             // BtnVoltar
             // 
@@ -229,17 +231,18 @@
             this.txtCliente.BackColor = System.Drawing.SystemColors.Window;
             this.txtCliente.Font = new System.Drawing.Font("Gabriola", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtCliente.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.txtCliente.Location = new System.Drawing.Point(997, 401);
+            this.txtCliente.Location = new System.Drawing.Point(997, 387);
             this.txtCliente.Name = "txtCliente";
             this.txtCliente.Size = new System.Drawing.Size(341, 40);
             this.txtCliente.TabIndex = 46;
+            this.txtCliente.TextChanged += new System.EventHandler(this.txtCliente_TextChanged);
             // 
             // lblCliente
             // 
             this.lblCliente.AutoSize = true;
             this.lblCliente.Font = new System.Drawing.Font("Gabriola", 18F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCliente.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.lblCliente.Location = new System.Drawing.Point(862, 398);
+            this.lblCliente.Location = new System.Drawing.Point(862, 384);
             this.lblCliente.Name = "lblCliente";
             this.lblCliente.Size = new System.Drawing.Size(79, 45);
             this.lblCliente.TabIndex = 47;
@@ -267,28 +270,54 @@
             this.dataPicker.Font = new System.Drawing.Font("Gabriola", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dataPicker.Format = System.Windows.Forms.DateTimePickerFormat.Short;
             this.dataPicker.ImeMode = System.Windows.Forms.ImeMode.Off;
-            this.dataPicker.Location = new System.Drawing.Point(997, 480);
+            this.dataPicker.Location = new System.Drawing.Point(997, 449);
             this.dataPicker.MinDate = new System.DateTime(2020, 1, 1, 0, 0, 0, 0);
             this.dataPicker.Name = "dataPicker";
             this.dataPicker.Size = new System.Drawing.Size(200, 40);
             this.dataPicker.TabIndex = 49;
+            this.dataPicker.ValueChanged += new System.EventHandler(this.dataPicker_ValueChanged);
             // 
             // lblData
             // 
             this.lblData.AutoSize = true;
             this.lblData.Font = new System.Drawing.Font("Gabriola", 18F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblData.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.lblData.Location = new System.Drawing.Point(862, 479);
+            this.lblData.Location = new System.Drawing.Point(862, 448);
             this.lblData.Name = "lblData";
             this.lblData.Size = new System.Drawing.Size(61, 45);
             this.lblData.TabIndex = 50;
             this.lblData.Text = "Data";
+            // 
+            // txtTotal
+            // 
+            this.txtTotal.BackColor = System.Drawing.SystemColors.Window;
+            this.txtTotal.Font = new System.Drawing.Font("Gabriola", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtTotal.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.txtTotal.Location = new System.Drawing.Point(997, 511);
+            this.txtTotal.Name = "txtTotal";
+            this.txtTotal.ReadOnly = true;
+            this.txtTotal.Size = new System.Drawing.Size(341, 40);
+            this.txtTotal.TabIndex = 51;
+            this.txtTotal.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            // 
+            // lblTotal
+            // 
+            this.lblTotal.AutoSize = true;
+            this.lblTotal.Font = new System.Drawing.Font("Gabriola", 18F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTotal.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.lblTotal.Location = new System.Drawing.Point(862, 508);
+            this.lblTotal.Name = "lblTotal";
+            this.lblTotal.Size = new System.Drawing.Size(62, 45);
+            this.lblTotal.TabIndex = 52;
+            this.lblTotal.Text = "Total";
             // 
             // JanelaNovoPedido
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1350, 729);
+            this.Controls.Add(this.txtTotal);
+            this.Controls.Add(this.lblTotal);
             this.Controls.Add(this.dataPicker);
             this.Controls.Add(this.lblData);
             this.Controls.Add(this.BtnSalvar);
@@ -303,14 +332,14 @@
             this.Controls.Add(this.lblProduto);
             this.Controls.Add(this.BtnVoltar);
             this.Controls.Add(this.dataView);
-            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.imgFundo);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "JanelaNovoPedido";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Projeto Brigadeiro";
             this.Load += new System.EventHandler(this.JanelaNovoPedido_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.imgFundo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataView)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -319,7 +348,7 @@
 
         #endregion
 
-        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.PictureBox imgFundo;
         private System.Windows.Forms.Button BtnVoltar;
         private System.Windows.Forms.DataGridView dataView;
         private System.Windows.Forms.DataGridViewTextBoxColumn produto;
@@ -337,5 +366,7 @@
         private System.Windows.Forms.Button BtnSalvar;
         private System.Windows.Forms.DateTimePicker dataPicker;
         private System.Windows.Forms.Label lblData;
+        private System.Windows.Forms.TextBox txtTotal;
+        private System.Windows.Forms.Label lblTotal;
     }
 }

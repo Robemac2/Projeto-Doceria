@@ -2,6 +2,7 @@
 using System;
 using System.Data;
 using System.Data.SQLite;
+using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -16,6 +17,17 @@ namespace Projeto_Brigadeiro.Forms
 
         private void JanelaNovoPedido_Load(object sender, EventArgs e)
         {
+            lblProduto.Parent = imgFundo;
+            lblProduto.BackColor = Color.Transparent;
+            lblQuantidade.Parent = imgFundo;
+            lblQuantidade.BackColor = Color.Transparent;
+            lblCliente.Parent = imgFundo;
+            lblCliente.BackColor = Color.Transparent;
+            lblData.Parent = imgFundo;
+            lblData.BackColor = Color.Transparent;
+            lblTotal.Parent = imgFundo;
+            lblTotal.BackColor = Color.Transparent;
+
             ListarIngredientes();
             Limpar();
         }
@@ -58,6 +70,18 @@ namespace Projeto_Brigadeiro.Forms
             }
         }
 
+        private void AtualizarDataGrid()
+        {
+            double total = 0;
+
+            foreach (DataGridViewRow item in dataView.Rows)
+            {
+                total += double.Parse(item.Cells[2].Value.ToString().Remove(0, 3));
+            }
+
+            txtTotal.Text = "R$ " + total.ToString("N2");
+        }
+
         private void Limpar()
         {
             comboReceita.SelectedIndex = 0;
@@ -96,7 +120,7 @@ namespace Projeto_Brigadeiro.Forms
             string quantidade = txtQuantidade.Text;
             string preco = BaseDados.PrecoProduto(produto, quantidade);
 
-            if (preco != "Conversão Indevida")
+            if (preco != "Erro para calcular o preço do produto.")
             {
                 bool produtoExiste = false;
                 int index = -1;
@@ -169,6 +193,21 @@ namespace Projeto_Brigadeiro.Forms
                 }
                 e.Handled = true;
             }
+        }
+
+        private void txtCliente_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void dataPicker_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
