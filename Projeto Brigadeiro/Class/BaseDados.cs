@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data.SQLite;
-using System.IO;
 using System.Windows.Forms;
 
 namespace Projeto_Brigadeiro.Class
@@ -159,6 +158,50 @@ namespace Projeto_Brigadeiro.Class
                 con.Close();
             }
             return "Conversão Indevida";
+        }
+
+        public static string PrecoProduto(string produto, string quantidade)
+        {
+            string baseDados = LocalBaseDados();
+            string strConection = StrConnection(baseDados);
+            int receitaRendimento;
+            double receitaPreco, precoUnidadeReceita, precoProduto;
+
+            SQLiteConnection con = new SQLiteConnection(strConection);
+
+            try
+            {
+                con.Open();
+
+                SQLiteCommand command = new SQLiteCommand();
+                command.Connection = con;
+                command.CommandText = "SELECT * FROM receitas WHERE nome LIKE @nome";
+                command.Parameters.AddWithValue("@nome", produto);
+
+                var reader = command.ExecuteReader();
+                reader.Read();
+
+                receitaRendimento = int.Parse(reader["rendimento"].ToString());
+                receitaPreco = double.Parse(reader["preco"].ToString().Remove(0, 3));
+
+                command.Dispose();
+                reader.Close();
+
+                precoUnidadeReceita = receitaPreco / receitaRendimento;
+
+                precoProduto = precoUnidadeReceita * int.Parse(quantidade);
+
+                return "R$ " + precoProduto.ToString("N2");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao acessar o banco de dados\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+            }
+            finally
+            {
+                con.Close();
+            }
+            return "Erro para calcular o preço do produto.";
         }
     }
 }

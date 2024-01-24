@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(JanelaInicio));
             this.btnIngredientes = new System.Windows.Forms.Button();
             this.btnReceitas = new System.Windows.Forms.Button();
@@ -36,7 +35,6 @@
             this.btnConfiguracoes = new System.Windows.Forms.Button();
             this.BtnSair = new System.Windows.Forms.Button();
             this.imgBackground = new System.Windows.Forms.PictureBox();
-            this.toolTipPedidos = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.imgBackground)).BeginInit();
             this.SuspendLayout();
             // 
@@ -79,7 +77,6 @@
             this.btnPedidos.Size = new System.Drawing.Size(274, 249);
             this.btnPedidos.TabIndex = 3;
             this.btnPedidos.Text = "Pedidos";
-            this.toolTipPedidos.SetToolTip(this.btnPedidos, "Módulo Pedidos está em Desenvolvimento");
             this.btnPedidos.UseVisualStyleBackColor = true;
             this.btnPedidos.Click += new System.EventHandler(this.btnPedidos_Click);
             // 
@@ -153,6 +150,5 @@
         private System.Windows.Forms.Button btnPedidos;
         private System.Windows.Forms.Button btnConfiguracoes;
         private System.Windows.Forms.Button BtnSair;
-        private System.Windows.Forms.ToolTip toolTipPedidos;
     }
 }

@@ -142,6 +142,12 @@
     <Compile Include="Forms\JanelaIngredientes.Designer.cs">
       <DependentUpon>JanelaIngredientes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\JanelaNovoPedido.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\JanelaNovoPedido.Designer.cs">
+      <DependentUpon>JanelaNovoPedido.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\JanelaReceitas.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -211,6 +217,9 @@
     <EmbeddedResource Include="Forms\JanelaNovaReceita.resx">
       <DependentUpon>JanelaNovaReceita.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\JanelaNovoPedido.resx">
+      <DependentUpon>JanelaNovoPedido.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\JanelaReceitas.resx">
       <DependentUpon>JanelaReceitas.cs</DependentUpon>
     </EmbeddedResource>
@@ -277,8 +286,9 @@
     <None Include="Assets\Images\Bolo_Configuracoes.jpg" />
     <Content Include="Assets\Docs\db_brigadeiro_layout.jpg" />
     <None Include="Assets\Images\Bolo_Menu.jpg" />
-    <None Include="Assets\Images\Foto_1.jpg" />
     <None Include="Assets\Images\Foto_3.jpg" />
+    <None Include="Assets\Images\Bolo_Pedidos.jpg" />
+    <None Include="Assets\Images\Bolo_Novo_Pedido.jpg" />
     <Content Include="icone.ico" />
   </ItemGroup>
   <ItemGroup>
