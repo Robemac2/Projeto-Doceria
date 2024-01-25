@@ -177,6 +177,12 @@ namespace Projeto_Brigadeiro
 
         private void BtnFinalizar_Click(object sender, EventArgs e)
         {
+            if (CadastroUsuario.UsuarioLogado.Tipo != "Master")
+            {
+                MessageBox.Show("Usuário não possui permissão para finalizar pedidos.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                return;
+            }
+
             string baseDados = BaseDados.LocalBaseDados();
             string strConection = BaseDados.StrConnection(baseDados);
 
@@ -227,6 +233,12 @@ namespace Projeto_Brigadeiro
 
         private void BtnCancelar_Click(object sender, EventArgs e)
         {
+            if (CadastroUsuario.UsuarioLogado.Tipo != "Master")
+            {
+                MessageBox.Show("Usuário não possui permissão para cancelar pedidos.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                return;
+            }
+
             string baseDados = BaseDados.LocalBaseDados();
             string strConection = BaseDados.StrConnection(baseDados);
 
