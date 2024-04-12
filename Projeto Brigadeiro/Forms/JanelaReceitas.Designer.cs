@@ -46,6 +46,7 @@
             this.tempoPreparoMinuto = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.preco = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.rendimento = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.precoUnitario = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.imgFundo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataView)).BeginInit();
             this.SuspendLayout();
@@ -147,7 +148,8 @@
             this.tempoPreparoHora,
             this.tempoPreparoMinuto,
             this.preco,
-            this.rendimento});
+            this.rendimento,
+            this.precoUnitario});
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Gabriola", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -241,6 +243,12 @@
             this.rendimento.Name = "rendimento";
             this.rendimento.ReadOnly = true;
             // 
+            // precoUnitario
+            // 
+            this.precoUnitario.HeaderText = "Preço Unitário";
+            this.precoUnitario.Name = "precoUnitario";
+            this.precoUnitario.ReadOnly = true;
+            // 
             // JanelaReceitas
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -286,5 +294,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn tempoPreparoMinuto;
         private System.Windows.Forms.DataGridViewTextBoxColumn preco;
         private System.Windows.Forms.DataGridViewTextBoxColumn rendimento;
+        private System.Windows.Forms.DataGridViewTextBoxColumn precoUnitario;
     }
 }

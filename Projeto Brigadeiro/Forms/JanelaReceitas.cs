@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using System.Data.SQLite;
 using System.Drawing;
 using System.Threading;
@@ -52,9 +53,18 @@ namespace Projeto_Brigadeiro
 
                 ingredientes.Columns.Remove("receita_id");
 
+                int row = 0;
+                double precoUnitario, rendimento;
+                string preco;
+
                 foreach (DataRow ingrediente in ingredientes.Rows)
                 {
                     dataView.Rows.Add(ingrediente.ItemArray);
+                    preco = dataView.Rows[row].Cells["preco"].Value.ToString().Remove(0, 3);
+                    rendimento = double.Parse(dataView.Rows[row].Cells["rendimento"].Value.ToString());
+                    precoUnitario = double.Parse(preco) / rendimento;
+                    dataView.Rows[row].Cells["precoUnitario"].Value = "R$ " + precoUnitario.ToString("N2");
+                    row++;
                 }
             }
             catch (Exception ex)
@@ -112,9 +122,18 @@ namespace Projeto_Brigadeiro
 
                     dataView.Rows.Clear();
 
+                    int row = 0;
+                    double precoUnitario, rendimento;
+                    string preco;
+
                     foreach (DataRow ingrediente in ingredientes.Rows)
                     {
                         dataView.Rows.Add(ingrediente.ItemArray);
+                        preco = dataView.Rows[row].Cells["preco"].Value.ToString().Remove(0, 3);
+                        rendimento = double.Parse(dataView.Rows[row].Cells["rendimento"].Value.ToString());
+                        precoUnitario = double.Parse(preco) / rendimento;
+                        dataView.Rows[row].Cells["precoUnitario"].Value = "R$ " + precoUnitario.ToString("N2");
+                        row++;
                     }
                 }
                 catch (Exception ex)
