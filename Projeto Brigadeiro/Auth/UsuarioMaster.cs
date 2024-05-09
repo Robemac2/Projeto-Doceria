@@ -1,6 +1,5 @@
-﻿using Projeto_Brigadeiro.Class;
-using System;
-using System.Data.SQLite;
+﻿using System;
+using System.Net.Http;
 using System.Windows.Forms;
 
 namespace Projeto_Brigadeiro
@@ -12,50 +11,51 @@ namespace Projeto_Brigadeiro
             InitializeComponent();
         }
 
-        private void BtnSalvar_Click(object sender, EventArgs e)
+        private void BtnSalvar_Click( object sender, EventArgs e )
         {
             string usuarioNome = txtUsuario.Text;
             string usuarioSenha = txtSenha.Text;
 
-            if (usuarioNome == "" || usuarioSenha == "")
+            if ( usuarioNome == "" || usuarioSenha == "" )
             {
-                MessageBox.Show("Nome e senha obrigatórios.\n", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Nome e senha obrigatórios.\n", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                 return;
             }
 
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
             try
             {
-                con.Open();
-                SQLiteCommand command = new SQLiteCommand();
-                command.Connection = con;
-                command.CommandText = "INSERT INTO usuarios (nome, senha, tipo) VALUES (@nome, @senha, @tipo)";
-                command.Parameters.AddWithValue("@nome", usuarioNome);
-                command.Parameters.AddWithValue("@senha", usuarioSenha);
-                command.Parameters.AddWithValue("@tipo", "Master");
+                Usuario usuario = new Usuario(usuarioNome, usuarioSenha, Enums.TipoUsuario.Master);
 
-                command.ExecuteNonQuery();
+                HttpClient client = new HttpClient();
+                client.BaseAddress = new Uri("http://192.168.68.12:8080/api/v1/");
 
-                command.Dispose();
+                var consumeApi = client.PostAsJsonAsync<Usuario>("usuario", usuario);
+                consumeApi.Wait();
+
+                var readData = consumeApi.Result;
+
+                if ( readData.IsSuccessStatusCode )
+                {
+                    return;
+                }
+
+                string erro = readData.StatusCode.ToString();
+
+                throw new Exception(erro);
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
-                MessageBox.Show("Erro ao criar usuário no banco de dados\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Erro ao criar usuário no banco de dados\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
             }
             finally
             {
-                con.Close();
+                Dispose();
+                Close();
             }
-            Dispose();
-            Close();
         }
-        private void CheckSenha_CheckedChanged(object sender, EventArgs e)
+        private void CheckSenha_CheckedChanged( object sender, EventArgs e )
         {
-            if (CheckSenha.Checked == true)
+            if ( CheckSenha.Checked == true )
             {
                 txtSenha.UseSystemPasswordChar = false;
             }

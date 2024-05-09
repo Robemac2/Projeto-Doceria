@@ -1,15 +1,34 @@
-﻿namespace Projeto_Brigadeiro
+﻿using Projeto_Brigadeiro.Enums;
+
+namespace Projeto_Brigadeiro
 {
     class Usuario
     {
+        public int Id { get; set; }
 
-        public string Nome { get; }
-        public string Tipo { get; }
+        public string Nome { get; set; }
 
-        public Usuario(string nome, string tipo)
+        public string Senha { get; set; }
+
+        public TipoUsuario TipoUsuario { get; set; }
+
+        public Usuario()
         {
-            Nome = nome;
-            Tipo = tipo;
+
+        }
+        public Usuario(string nome, string senha, TipoUsuario tipoUsuario)
+        {
+            this.Nome = nome;
+            this.Senha = senha;
+            this.TipoUsuario = tipoUsuario;
+        }
+
+        public Usuario(int id, string nome, string senha, TipoUsuario tipoUsuario)
+        {
+            this.Id = id;
+            this.Nome = nome;
+            this.Senha = senha;
+            this.TipoUsuario = tipoUsuario;
         }
     }
 }
