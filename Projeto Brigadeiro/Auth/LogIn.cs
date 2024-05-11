@@ -32,7 +32,7 @@ namespace Projeto_Brigadeiro
             string usuario = txtUsuario.Text;
             string senha = txtSenha.Text;
 
-            if ( CadastroUsuario.Login(usuario, senha) )
+            if ( CadastroUsuario.Login(usuario, senha).Result )
             {
                 Dispose();
                 Close();

@@ -16,14 +16,14 @@ namespace Projeto_Brigadeiro
         {
 
         }
-        public Usuario(string nome, string senha, TipoUsuario tipoUsuario)
+        public Usuario( string nome, string senha, TipoUsuario tipoUsuario )
         {
             this.Nome = nome;
             this.Senha = senha;
             this.TipoUsuario = tipoUsuario;
         }
 
-        public Usuario(int id, string nome, string senha, TipoUsuario tipoUsuario)
+        public Usuario( int id, string nome, string senha, TipoUsuario tipoUsuario )
         {
             this.Id = id;
             this.Nome = nome;
