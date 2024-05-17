@@ -9,16 +9,16 @@ namespace Projeto_Brigadeiro
     {
         [JsonIgnore]
         public Custo CustoCadastro { get; private set; }
-        public float CustoEnergia { get; private set; }
-        public float CustoAgua { get; private set; }
-        public float CustoGas { get; private set; }
-        public float CustoSalario { get; private set; }
+        public decimal CustoEnergia { get; private set; }
+        public decimal CustoAgua { get; private set; }
+        public decimal CustoGas { get; private set; }
+        public decimal CustoSalario { get; private set; }
         public int Dias { get; private set; }
         public DateTime Horas { get; private set; }
-        public float CustoGeral { get; private set; }
-        public float Lucro { get; private set; }
+        public decimal CustoGeral { get; private set; }
+        public decimal Lucro { get; private set; }
 
-        public Custo(float custoEnergia, float custoAgua, float custoGas, float custoSalario, int dias, DateTime horas, float custoGeral, float lucro)
+        public Custo( decimal custoEnergia, decimal custoAgua, decimal custoGas, decimal custoSalario, int dias, DateTime horas, decimal custoGeral, decimal lucro )
         {
             CustoEnergia = custoEnergia;
             CustoAgua = custoAgua;
@@ -30,39 +30,39 @@ namespace Projeto_Brigadeiro
             Lucro = lucro;
         }
 
-        public static float CalcularCustoEnergia(float custoEnergia)
+        public static decimal CalcularCustoEnergia( decimal custoEnergia )
         {
-            return 300f / 1000f * custoEnergia;
+            return 300m / 1000m * custoEnergia;
         }
 
-        public static float CalcularCustoAgua(float custoAgua)
+        public static decimal CalcularCustoAgua( decimal custoAgua )
         {
-            return 50f / 1000f * custoAgua;
+            return 50m / 1000m * custoAgua;
         }
 
-        public static float CalcularCustoGas(float custoGas)
+        public static decimal CalcularCustoGas( decimal custoGas )
         {
-            return 0.25f * custoGas / 13f;
+            return 0.25m * custoGas / 13m;
         }
 
-        public static float CalcularCustoSalario(int dias, int horas, float salario)
+        public static decimal CalcularCustoSalario( int dias, int horas, decimal salario )
         {
             return salario / dias / horas;
         }
 
-        public static float CalcularCustoGeral(float custoGeral)
+        public static decimal CalcularCustoGeral( decimal custoGeral )
         {
-            return 1 + (custoGeral / 100);
+            return 1m + (custoGeral / 100m);
         }
 
-        public static float CalcularLucro(float lucro)
+        public static decimal CalcularLucro( decimal lucro )
         {
-            return 1 + (lucro / 100);
+            return 1m + (lucro / 100m);
         }
 
-        public static void SalvarCusto(Custo custo)
+        public static void SalvarCusto( Custo custo )
         {
-            if (File.Exists("Custo.json"))
+            if ( File.Exists("Custo.json") )
             {
                 string nomeArquivo = "Custo.json";
                 string salvar = JsonSerializer.Serialize(custo);
@@ -76,7 +76,7 @@ namespace Projeto_Brigadeiro
 
         public static void CriarCusto()
         {
-            if (File.Exists("Custo.json"))
+            if ( File.Exists("Custo.json") )
             {
                 string nomeArquivo = "Custo.json";
                 string carregar = File.ReadAllText(nomeArquivo);
