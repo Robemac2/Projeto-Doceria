@@ -33,11 +33,6 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(JanelaIngredientes));
             this.imgFundo = new System.Windows.Forms.PictureBox();
             this.dataView = new System.Windows.Forms.DataGridView();
-            this.ingrediente = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quantidade = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.unidade = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.preco = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.data = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.BtnSalvar = new System.Windows.Forms.Button();
             this.lblIngrediente = new System.Windows.Forms.Label();
             this.txtIngrediente = new System.Windows.Forms.TextBox();
@@ -88,12 +83,6 @@
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dataView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.ingrediente,
-            this.quantidade,
-            this.unidade,
-            this.preco,
-            this.data});
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Gabriola", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -114,36 +103,6 @@
             this.dataView.TabIndex = 1;
             this.dataView.TabStop = false;
             this.dataView.SelectionChanged += new System.EventHandler(this.DataView_SelectionChanged);
-            // 
-            // ingrediente
-            // 
-            this.ingrediente.HeaderText = "Ingrediente";
-            this.ingrediente.Name = "ingrediente";
-            this.ingrediente.ReadOnly = true;
-            // 
-            // quantidade
-            // 
-            this.quantidade.HeaderText = "Quantidade";
-            this.quantidade.Name = "quantidade";
-            this.quantidade.ReadOnly = true;
-            // 
-            // unidade
-            // 
-            this.unidade.HeaderText = "Unidade";
-            this.unidade.Name = "unidade";
-            this.unidade.ReadOnly = true;
-            // 
-            // preco
-            // 
-            this.preco.HeaderText = "Preço";
-            this.preco.Name = "preco";
-            this.preco.ReadOnly = true;
-            // 
-            // data
-            // 
-            this.data.HeaderText = "Data";
-            this.data.Name = "data";
-            this.data.ReadOnly = true;
             // 
             // BtnSalvar
             // 
@@ -427,11 +386,6 @@
 
         private System.Windows.Forms.PictureBox imgFundo;
         private System.Windows.Forms.DataGridView dataView;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ingrediente;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quantidade;
-        private System.Windows.Forms.DataGridViewTextBoxColumn unidade;
-        private System.Windows.Forms.DataGridViewTextBoxColumn preco;
-        private System.Windows.Forms.DataGridViewTextBoxColumn data;
         private System.Windows.Forms.Button BtnSalvar;
         private System.Windows.Forms.Label lblIngrediente;
         private System.Windows.Forms.TextBox txtIngrediente;

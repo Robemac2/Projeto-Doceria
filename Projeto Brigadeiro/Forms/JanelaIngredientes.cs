@@ -1,10 +1,15 @@
-﻿using Projeto_Brigadeiro.Class;
+﻿using Newtonsoft.Json;
+using Projeto_Brigadeiro.Class;
+using Projeto_Brigadeiro.Entities;
+using Projeto_Brigadeiro.Enums;
 using System;
-using System.ComponentModel;
+using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
 using System.Drawing;
+using System.Linq;
+using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Projeto_Brigadeiro
@@ -12,12 +17,14 @@ namespace Projeto_Brigadeiro
     public partial class JanelaIngredientes : Form
     {
         public static string IngredienteHistorico;
+        private static List<Ingrediente> ListaIngredientes = new List<Ingrediente>();
+        private static List<Ingrediente> ListaOrdenada;
         public JanelaIngredientes()
         {
             InitializeComponent();
         }
 
-        private void JanelaIngredientes_Load(object sender, EventArgs e)
+        private void JanelaIngredientes_Load( object sender, EventArgs e )
         {
             lblIngrediente.Parent = imgFundo;
             lblIngrediente.BackColor = Color.Transparent;
@@ -32,9 +39,12 @@ namespace Projeto_Brigadeiro
             lblPesquisar.Parent = imgFundo;
             lblPesquisar.BackColor = Color.Transparent;
 
-            ListarTabela();
+            comboUnidade.DataSource = Enum.GetValues(typeof(Unidade));
+            dataView.DataSource = new BindingSource(ListaOrdenada, "");
+            ListaIngredientes.Clear();
 
             Limpar();
+            ListarTabela();
         }
 
         private void Limpar()
@@ -47,56 +57,54 @@ namespace Projeto_Brigadeiro
             dataPicker.Value = DateTime.Now;
         }
 
-        private void ListarTabela()
+        private void UpdateDataView( List<Ingrediente> lista )
         {
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
+            ListaOrdenada = new List<Ingrediente>(lista.OrderBy(x => x.Nome));
+            this.dataView.DataSource = typeof(Ingrediente);
+            this.dataView.DataSource = ListaOrdenada;
+            this.dataView.Refresh();
+            this.dataView.Columns["Id"].Visible = false;
+        }
 
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
+        private async void ListarTabela()
+        {
             try
             {
-                SQLiteCommand command = new SQLiteCommand();
-                command.Connection = con;
-                command.CommandText = "SELECT * FROM ingredientes";
+                var consumeApi = await Task.FromResult(ClientHttp.Client.GetAsync($"ingrediente", HttpCompletionOption.ResponseContentRead));
 
-                DataTable ingredientes = new DataTable();
-                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
-
-                con.Open();
-
-                adapter.Fill(ingredientes);
-
-                command.Dispose();
-
-                ingredientes.Columns.Remove("ingrediente_id");
-
-                foreach (DataRow ingrediente in ingredientes.Rows)
+                if ( consumeApi.Result.IsSuccessStatusCode )
                 {
-                    dataView.Rows.Add(ingrediente.ItemArray);
+                    var retorno = await Task.FromResult(consumeApi.Result.Content.ReadAsStringAsync());
+                    var ingredientes = (JsonConvert.DeserializeObject<List<Ingrediente>>(retorno.Result));
+                    ListaIngredientes.AddRange(ingredientes);
+
+                    return;
                 }
+
+                string erro = consumeApi.Result.StatusCode.ToString();
+
+                throw new Exception(erro);
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
-                MessageBox.Show("Erro ao ler dados da tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Erro ao ler dados da tabela.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
             }
             finally
             {
-                con.Close();
+                UpdateDataView(ListaIngredientes);
+                Limpar();
             }
-
-            this.dataView.Sort(this.dataView.Columns["ingrediente"], ListSortDirection.Ascending);
         }
 
-        private void TxtQuantidade_KeyPress(object sender, KeyPressEventArgs e)
+        private void TxtQuantidade_KeyPress( object sender, KeyPressEventArgs e )
         {
-            if (char.IsDigit(e.KeyChar))
+            if ( char.IsDigit(e.KeyChar) )
             {
                 TextBox t = (TextBox)sender;
                 t.SelectionStart = 0;
                 int cursorPosition = t.Text.Length - t.SelectionStart;
 
-                if (t.Text.Length < 20)
+                if ( t.Text.Length < 20 )
                 {
                     t.Text = (decimal.Parse(t.Text.Insert(cursorPosition, e.KeyChar.ToString()))).ToString("N0");
                 }
@@ -106,15 +114,15 @@ namespace Projeto_Brigadeiro
             e.Handled = true;
         }
 
-        private void TxtQuantidade_KeyDown(object sender, KeyEventArgs e)
+        private void TxtQuantidade_KeyDown( object sender, KeyEventArgs e )
         {
-            if (e.KeyCode == Keys.Back)
+            if ( e.KeyCode == Keys.Back )
             {
                 TextBox t = (TextBox)sender;
 
                 string Left = t.Text.Substring(0, t.Text.Length).Replace(".", "").Replace(",", "");
 
-                if (Left.Length > 1)
+                if ( Left.Length > 1 )
                 {
                     Left = Left.Remove(Left.Length - 1);
                     t.Text = (float.Parse(Left)).ToString("N0");
@@ -127,15 +135,15 @@ namespace Projeto_Brigadeiro
             }
         }
 
-        private void TxtPreco_KeyPress(object sender, KeyPressEventArgs e)
+        private void TxtPreco_KeyPress( object sender, KeyPressEventArgs e )
         {
-            if (char.IsDigit(e.KeyChar))
+            if ( char.IsDigit(e.KeyChar) )
             {
                 TextBox t = (TextBox)sender;
                 t.Text = t.Text.Remove(0, 3);
                 int cursorPosition = t.Text.Length - t.SelectionStart;
 
-                if (t.Text.Length < 20)
+                if ( t.Text.Length < 20 )
                 {
                     t.Text = (float.Parse(t.Text.Insert(cursorPosition, e.KeyChar.ToString()).Replace(",", "").Replace(".", "")) / 100).ToString("N2");
                 }
@@ -146,9 +154,9 @@ namespace Projeto_Brigadeiro
             e.Handled = true;
         }
 
-        private void TxtPreco_KeyDown(object sender, KeyEventArgs e)
+        private void TxtPreco_KeyDown( object sender, KeyEventArgs e )
         {
-            if (e.KeyCode == Keys.Back)
+            if ( e.KeyCode == Keys.Back )
             {
                 TextBox t = (TextBox)sender;
                 t.Text = t.Text.Remove(0, 3);
@@ -158,7 +166,7 @@ namespace Projeto_Brigadeiro
                 string Left = t.Text.Substring(0, t.Text.Length - cursorPosition).Replace(".", "").Replace(",", "");
                 string Right = t.Text.Substring(t.Text.Length - cursorPosition).Replace(".", "").Replace(",", "");
 
-                if (Left.Length > 0)
+                if ( Left.Length > 0 )
                 {
                     Left = Left.Remove(Left.Length - 1);
                     t.Text = (decimal.Parse(Left + Right) / 100).ToString("N2");
@@ -169,190 +177,158 @@ namespace Projeto_Brigadeiro
             }
         }
 
-        private void BtnSalvar_Click(object sender, EventArgs e)
+        private void BtnSalvar_Click( object sender, EventArgs e )
         {
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
             string ingredienteNome = txtIngrediente.Text;
             int ingredienteQuantidade = int.Parse(txtQuantidade.Text);
-            string ingredienteUnidade = comboUnidade.Text;
-            string ingredientePreco = txtPreco.Text;
-            string ingredienteData = dataPicker.Value.ToShortDateString();
+            Unidade ingredienteUnidade = (Unidade)comboUnidade.SelectedItem;
+            decimal ingredientePreco = decimal.Parse(txtPreco.Text.Remove(0, 3));
+            string ingredienteData = dataPicker.Value.Date.ToString("yyyy-MM-dd");
 
-            if (ingredienteNome == "" || ingredienteQuantidade == 0 || ingredientePreco == "R$ 0,00")
+            if ( ingredienteNome == "" || ingredienteQuantidade == 0 || ingredientePreco == 0 )
             {
-                MessageBox.Show("Todos os dados são de preenchimento obrigatório.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Todos os dados são de preenchimento obrigatório.", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                 return;
             }
             else
             {
                 try
                 {
-                    con.Open();
-                    SQLiteCommand command = new SQLiteCommand();
-                    command.Connection = con;
-                    command.CommandText = "INSERT INTO ingredientes (nome, quantidade, unidade, preco, data) "
-                                          + "VALUES (@nome, @quantidade, @unidade, @preco, @data)";
-                    command.Parameters.AddWithValue("@nome", ingredienteNome);
-                    command.Parameters.AddWithValue("@quantidade", ingredienteQuantidade);
-                    command.Parameters.AddWithValue("@unidade", ingredienteUnidade);
-                    command.Parameters.AddWithValue("@preco", ingredientePreco);
-                    command.Parameters.AddWithValue("@data", ingredienteData);
+                    Ingrediente ingrediente = new Ingrediente(ingredienteNome, ingredienteQuantidade, ingredienteUnidade, ingredientePreco, ingredienteData);
 
-                    command.ExecuteNonQuery();
+                    var consumeApi = ClientHttp.Client.PostAsJsonAsync<Ingrediente>("ingrediente", ingrediente);
+                    consumeApi.Wait();
 
-                    command.Dispose();
+                    var readData = consumeApi.Result;
+
+                    if ( readData.IsSuccessStatusCode )
+                    {
+                        ListaIngredientes.Add(ingrediente);
+                        UpdateDataView(ListaIngredientes);
+                        return;
+                    }
+
+                    string erro = readData.StatusCode.ToString();
+
+                    throw new Exception(erro);
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
-                    MessageBox.Show("Erro ao inserir dados na tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                    MessageBox.Show("Erro ao inserir dados na tabela.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 }
                 finally
                 {
-                    con.Close();
+                    Limpar();
                 }
             }
-
-            dataView.Rows.Clear();
-            ListarTabela();
-            Limpar();
         }
 
-        private void BtnAtualizar_Click(object sender, EventArgs e)
+        private void BtnAtualizar_Click( object sender, EventArgs e )
         {
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
             string ingredienteNome = txtIngrediente.Text;
             int ingredienteQuantidade = int.Parse(txtQuantidade.Text);
-            string ingredienteUnidade = comboUnidade.Text;
-            string ingredientePreco = txtPreco.Text;
-            string ingredienteData = dataPicker.Value.ToShortDateString();
+            Unidade ingredienteUnidade = (Unidade)comboUnidade.SelectedItem;
+            decimal ingredientePreco = decimal.Parse(txtPreco.Text.Remove(0, 3));
+            string ingredienteData = dataPicker.Value.Date.ToString("yyyy-MM-dd");
 
-            if (ingredienteNome == "")
+            if ( ingredienteNome == "" )
             {
-                MessageBox.Show("Selecione um ingrediente para atualizar.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Selecione um ingrediente para atualizar.", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                 return;
             }
             else
             {
                 try
                 {
-                    SQLiteCommand command = new SQLiteCommand();
-                    command.Connection = con;
-                    command.CommandText = "SELECT * FROM ingredientes WHERE nome= @nome";
-                    command.Parameters.AddWithValue("@nome", ingredienteNome);
+                    Ingrediente ingrediente = ListaIngredientes.First(x => x.Nome == ingredienteNome);
+                    Ingrediente ingredienteAtualizado = ingrediente;
+                    ingredienteAtualizado.Quantidade = ingredienteQuantidade;
+                    ingredienteAtualizado.Unidade = ingredienteUnidade;
+                    ingredienteAtualizado.Preco = ingredientePreco;
+                    ingredienteAtualizado.Data = ingredienteData;
 
-                    DataTable ingredientes = new DataTable();
-                    SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
+                    var consumeApi = ClientHttp.Client.PutAsJsonAsync<Ingrediente>("ingrediente", ingredienteAtualizado);
+                    consumeApi.Wait();
 
-                    con.Open();
+                    var readData = consumeApi.Result;
 
-                    adapter.Fill(ingredientes);
+                    if ( readData.IsSuccessStatusCode )
+                    {
+                        ListaIngredientes.Remove(ingrediente);
+                        ListaIngredientes.Add(ingredienteAtualizado);
+                        return;
+                    }
 
-                    command.CommandText = "INSERT INTO ingredientesHistorico (nome, quantidade, unidade, preco, data)"
-                                          + "VALUES (@nome, @quantidade, @unidade, @preco, @data)";
-                    command.Parameters.AddWithValue("@nome", ingredientes.Rows[0][1].ToString());
-                    command.Parameters.AddWithValue("@quantidade", int.Parse(ingredientes.Rows[0][2].ToString()));
-                    command.Parameters.AddWithValue("@unidade", ingredientes.Rows[0][3].ToString());
-                    command.Parameters.AddWithValue("@preco", ingredientes.Rows[0][4].ToString());
-                    command.Parameters.AddWithValue("@data", ingredientes.Rows[0][5].ToString());
+                    string erro = readData.StatusCode.ToString();
 
-                    command.ExecuteNonQuery();
-
-                    command.CommandText = "UPDATE ingredientes SET quantidade= @quantidade,"
-                                          + "unidade= @unidade, preco= @preco, data= @data WHERE nome= @nome";
-                    command.Parameters.AddWithValue("@nome", ingredienteNome);
-                    command.Parameters.AddWithValue("@quantidade", ingredienteQuantidade);
-                    command.Parameters.AddWithValue("@unidade", ingredienteUnidade);
-                    command.Parameters.AddWithValue("@preco", ingredientePreco);
-                    command.Parameters.AddWithValue("@data", ingredienteData);
-
-                    command.ExecuteNonQuery();
-
-                    command.Dispose();
+                    throw new Exception(erro);
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
+                {
+                    MessageBox.Show("Erro ao inserir dados na tabela.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                }
+                finally
+                {
+                    UpdateDataView(ListaIngredientes);
+                    Limpar();
+                }
+
+            }
+        }
+
+        private void BtnExcluir_Click( object sender, EventArgs e )
+        {
+            if ( CadastroUsuario.UsuarioLogado.TipoUsuario.ToString() != "Master" )
+            {
+                MessageBox.Show("Usuário não possui permissão para excluir dados.", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                return;
+            }
+
+            string ingredienteNome = txtIngrediente.Text;
+
+            if ( ingredienteNome == "" )
+            {
+                MessageBox.Show("Informe o ingrediente a ser excluido.", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                return;
+            }
+            else
+            {
+                try
+                {
+                    Ingrediente ingrediente = ListaIngredientes.First(x => x.Nome == ingredienteNome);
+
+                    var consumeApi = ClientHttp.Client.DeleteAsync("ingrediente/" + ingrediente.Id);
+                    consumeApi.Wait();
+
+                    var readData = consumeApi.Result;
+
+                    if ( readData.IsSuccessStatusCode )
+                    {
+                        ListaIngredientes.Remove(ingrediente);
+                        return;
+                    }
+
+                    string erro = readData.StatusCode.ToString();
+
+                    throw new Exception(erro);
+                }
+                catch ( Exception ex )
                 {
                     MessageBox.Show("Erro ao excluir dados na tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 }
                 finally
                 {
-                    con.Close();
+                    UpdateDataView(ListaIngredientes);
+                    Limpar();
                 }
-
             }
-            dataView.Rows.Clear();
-            ListarTabela();
-            Limpar();
         }
 
-        private void BtnExcluir_Click(object sender, EventArgs e)
+        private void BtnPesquisar_Click( object sender, EventArgs e )
         {
-            if (CadastroUsuario.UsuarioLogado.Tipo != "Master")
-            {
-                MessageBox.Show("Usuário não possui permissão para excluir dados.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
-                return;
-            }
-
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
-            string ingredienteNome = txtIngrediente.Text;
-
-            if (ingredienteNome == "")
-            {
-                MessageBox.Show("Informe o ingrediente a ser excluido.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
-                return;
-            }
-            else
-            {
-                try
-                {
-                    con.Open();
-
-                    SQLiteCommand command = new SQLiteCommand();
-                    command.Connection = con;
-                    command.CommandText = "DELETE FROM ingredientes WHERE nome= @nome";
-                    command.Parameters.AddWithValue("@nome", ingredienteNome);
-
-                    command.ExecuteNonQuery();
-
-                    command.Dispose();
-
-                    dataView.Rows.Clear();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Erro ao excluir dados na tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
-                }
-                finally
-                {
-                    con.Close();
-                }
-            }
-
-            ListarTabela();
-            Limpar();
-        }
-
-        private void BtnPesquisar_Click(object sender, EventArgs e)
-        {
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
             string ingredienteNome = txtPesquisar.Text.ToLower();
 
-            if (ingredienteNome == "")
+            if ( ingredienteNome == "" )
             {
                 MessageBox.Show("Informe o ingrediente a ser pesquisado.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                 return;
@@ -361,80 +337,60 @@ namespace Projeto_Brigadeiro
             {
                 try
                 {
-                    con.Open();
+                    List<Ingrediente> listaPesquisa = new List<Ingrediente>();
+                    listaPesquisa.AddRange(ListaIngredientes.Where(x => x.Nome.Contains(ingredienteNome)));
 
-                    SQLiteCommand command = new SQLiteCommand();
-                    command.Connection = con;
-                    command.CommandText = "SELECT * FROM ingredientes WHERE nome LIKE @nome COLLATE NOCASE";
-                    command.Parameters.AddWithValue("@nome", "%" + ingredienteNome + "%");
-
-                    command.ExecuteNonQuery();
-
-                    DataTable ingredientes = new DataTable();
-                    SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
-
-                    adapter.Fill(ingredientes);
-
-                    command.Dispose();
-
-                    ingredientes.Columns.Remove("ingrediente_id");
-
-                    dataView.Rows.Clear();
-
-                    foreach (DataRow ingrediente in ingredientes.Rows)
-                    {
-                        dataView.Rows.Add(ingrediente.ItemArray);
-                    }
+                    UpdateDataView(listaPesquisa);
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
-                    MessageBox.Show("Erro ao consultar dados na tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                    MessageBox.Show("Erro ao consultar dados na tabela.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 }
                 finally
                 {
-                    con.Close();
+                    Limpar();
+                }
+            }
+        }
+
+        private void BtnLimpar_Click( object sender, EventArgs e )
+        {
+            UpdateDataView(ListaIngredientes);
+            Limpar();
+        }
+
+        private void DataView_SelectionChanged( object sender, EventArgs e )
+        {
+            if ( dataView.Focused )
+            {
+                txtIngrediente.Text = dataView.CurrentRow.Cells[1].Value.ToString();
+                txtQuantidade.Text = dataView.CurrentRow.Cells[2].Value.ToString();
+                txtPreco.Text = "R$ " + dataView.CurrentRow.Cells[4].Value.ToString();
+
+                switch ( dataView.CurrentRow.Cells[3].Value.ToString() )
+                {
+                    case "gramas":
+                        comboUnidade.SelectedIndex = 0;
+                        break;
+                    case "Kilogramas":
+                        comboUnidade.SelectedIndex = 1;
+                        break;
+                    case "mililitros":
+                        comboUnidade.SelectedIndex = 2;
+                        break;
+                    case "Litros":
+                        comboUnidade.SelectedIndex = 3;
+                        break;
+                    case "unidades":
+                        comboUnidade.SelectedIndex = 4;
+                        break;
                 }
 
+                dataPicker.Value = DateTime.Parse(dataView.CurrentRow.Cells[5].Value.ToString());
             }
-            Limpar();
         }
 
-        private void BtnLimpar_Click(object sender, EventArgs e)
-        {
-            dataView.Rows.Clear();
-            ListarTabela();
-            Limpar();
-        }
-
-        private void DataView_SelectionChanged(object sender, EventArgs e)
-        {
-            txtIngrediente.Text = dataView.CurrentRow.Cells["ingrediente"].Value.ToString();
-            txtQuantidade.Text = dataView.CurrentRow.Cells["quantidade"].Value.ToString();
-            txtPreco.Text = dataView.CurrentRow.Cells["preco"].Value.ToString();
-
-            switch (dataView.CurrentRow.Cells["unidade"].Value.ToString())
-            {
-                case "gramas":
-                    comboUnidade.SelectedIndex = 0;
-                    break;
-                case "Kilogramas":
-                    comboUnidade.SelectedIndex = 1;
-                    break;
-                case "mililitros":
-                    comboUnidade.SelectedIndex = 2;
-                    break;
-                case "Litros":
-                    comboUnidade.SelectedIndex = 3;
-                    break;
-                case "unidades":
-                    comboUnidade.SelectedIndex = 4;
-                    break;
-            }
-
-            dataPicker.Value = DateTime.Parse(dataView.CurrentRow.Cells["data"].Value.ToString());
-        }
-
-        private void BtnVoltar_Click(object sender, EventArgs e)
+        private void BtnVoltar_Click( object sender, EventArgs e )
         {
             Dispose();
             Close();
@@ -442,47 +398,42 @@ namespace Projeto_Brigadeiro
             t.Start();
         }
 
-        private void BtnHistorico_Click(object sender, EventArgs e)
+        private async void BtnHistorico_Click( object sender, EventArgs e )
         {
-            IngredienteHistorico = dataView.CurrentRow.Cells["ingrediente"].Value.ToString();
-
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
+            IngredienteHistorico = dataView.CurrentRow.Cells[1].Value.ToString();
 
             try
             {
-                con.Open();
+                Ingrediente ingrediente = ListaIngredientes.First(x => x.Nome == IngredienteHistorico);
 
-                SQLiteCommand command = new SQLiteCommand();
-                command.Connection = con;
-                command.CommandText = "SELECT * FROM ingredientesHistorico WHERE nome LIKE @nome";
-                command.Parameters.AddWithValue("@nome", IngredienteHistorico);
+                var consumeApi = ClientHttp.Client.GetAsync($"historico-ingrediente/{ingrediente.Id}", HttpCompletionOption.ResponseContentRead);
+                consumeApi.Wait();
 
-                command.ExecuteNonQuery();
+                var readData = consumeApi.Result;
 
-                DataTable dt = new DataTable();
-                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
-
-                adapter.Fill(dt);
-
-                command.Dispose();
-
-                if (dt.Rows.Count == 0)
+                if ( readData.IsSuccessStatusCode )
                 {
-                    MessageBox.Show("Nao Existe histórico para o ingrediente selecionado.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
-                    return;
+                    var retorno = await Task.FromResult(consumeApi.Result.Content.ReadAsStringAsync());
+                    var ingredientes = (JsonConvert.DeserializeObject<List<Ingrediente>>(retorno.Result));
+
+                    if ( ingredientes.Count == 0 )
+                    {
+                        MessageBox.Show("Não existe histórico para o ingrediente selecionado.\n", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                        return;
+                    }
                 }
 
+                string erro = readData.StatusCode.ToString();
+
+                throw new Exception(erro);
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
-                MessageBox.Show("Erro ao acessar o banco de dados.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Erro ao acessar o banco de dados.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             }
             finally
             {
-                con.Close();
+
             }
 
             Thread t = new Thread(() => Application.Run(new JanelaHistorico()));
