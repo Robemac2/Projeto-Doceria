@@ -1,6 +1,4 @@
-﻿
-
-namespace Projeto_Brigadeiro.Enums
+﻿namespace Projeto_Brigadeiro.Enums
 {
     public enum TipoUsuario
     {
