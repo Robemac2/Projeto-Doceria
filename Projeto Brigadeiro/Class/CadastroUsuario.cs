@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
+using Projeto_Brigadeiro.Class;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -18,11 +18,7 @@ namespace Projeto_Brigadeiro
         {
             try
             {
-                HttpClient client = new HttpClient();
-                client.BaseAddress = new Uri("http://192.168.68.12:8080/api/v1/");
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                var consumeApi = await Task.FromResult(client.GetAsync($"usuario/validar?nome={nome}&senha={senha}", HttpCompletionOption.ResponseContentRead));
+                var consumeApi = await Task.FromResult(ClientHttp.Client.GetAsync($"usuario/validar?nome={nome}&senha={senha}", HttpCompletionOption.ResponseContentRead));
 
                 if ( consumeApi.Result.IsSuccessStatusCode )
                 {

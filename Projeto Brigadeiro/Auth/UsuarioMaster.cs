@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Projeto_Brigadeiro.Class;
+using System;
 using System.Net.Http;
 using System.Windows.Forms;
 
@@ -26,10 +27,7 @@ namespace Projeto_Brigadeiro
             {
                 Usuario usuario = new Usuario(usuarioNome, usuarioSenha, Enums.TipoUsuario.Master);
 
-                HttpClient client = new HttpClient();
-                client.BaseAddress = new Uri("http://192.168.68.12:8080/api/v1/");
-
-                var consumeApi = client.PostAsJsonAsync<Usuario>("usuario", usuario);
+                var consumeApi = ClientHttp.Client.PostAsJsonAsync<Usuario>("usuario", usuario);
                 consumeApi.Wait();
 
                 var readData = consumeApi.Result;

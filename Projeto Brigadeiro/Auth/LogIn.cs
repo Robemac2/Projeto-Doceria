@@ -1,4 +1,5 @@
 ﻿using Projeto_Brigadeiro.Auth;
+using Projeto_Brigadeiro.Class;
 using System;
 using System.Drawing;
 using System.Threading;
@@ -25,6 +26,7 @@ namespace Projeto_Brigadeiro
             CheckSenha.BackColor = Color.Transparent;
 
             PrimeiroUso.ChecarPrimeiroUso();
+            ClientHttp clientHttp = new ClientHttp();
         }
 
         private void BtnEntrar_Click( object sender, EventArgs e )
