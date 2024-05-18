@@ -1,10 +1,14 @@
-﻿using Projeto_Brigadeiro.Class;
+﻿using Newtonsoft.Json;
+using Projeto_Brigadeiro.Class;
+using Projeto_Brigadeiro.Entities;
 using System;
+using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
 using System.Drawing;
-using System.Globalization;
+using System.Linq;
+using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -12,17 +16,20 @@ namespace Projeto_Brigadeiro
 {
     public partial class JanelaHistorico : Form
     {
+        private static List<Ingrediente> ListaIngredientes = new List<Ingrediente>();
+        private static List<Ingrediente> ListaOrdenada;
+
         public JanelaHistorico()
         {
             InitializeComponent();
         }
 
-        private void JanelaHistorico_Load(object sender, EventArgs e)
+        private void JanelaHistorico_Load( object sender, EventArgs e )
         {
             Font f = new Font("Gabriola", 20f, FontStyle.Bold);
             Font g = new Font("Gabriola", 16f, FontStyle.Italic);
             grafico.Font = f;
-            grafico.Titles.Add("Histórico de Preços - " + JanelaIngredientes.IngredienteHistorico).Font = f;
+            grafico.Titles.Add("Histórico de Preços - " + JanelaIngredientes.IngredienteHistoricoNome).Font = f;
             ChartArea chartArea = new ChartArea("Data X Preço");
             chartArea.AxisX.TitleFont = f;
             chartArea.AxisY.TitleFont = f;
@@ -39,80 +46,71 @@ namespace Projeto_Brigadeiro
             grafico.Series["Preço"].IsVisibleInLegend = false;
             grafico.ChartAreas.Clear();
             grafico.ChartAreas.Add(chartArea);
+            ListaIngredientes.Clear();
 
-            ListarTabela();
+            BtnCompleto_Click(null, new EventArgs());
         }
 
-        private void ListarTabela()
+        private void UpdateDataView( List<Ingrediente> lista )
         {
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
+            ListaOrdenada = new List<Ingrediente>(lista.OrderByDescending(x => x.Data));
+            this.dataView.DataSource = typeof(Ingrediente);
+            this.dataView.DataSource = ListaOrdenada;
+            this.dataView.Refresh();
+            this.dataView.Columns["Id"].Visible = false;
+            this.dataView.Columns["Nome"].Visible = false;
+            this.dataView.Columns["Quantidade"].Visible = false;
+            this.dataView.Columns["Unidade"].Visible = false;
+        }
 
-            SQLiteConnection con = new SQLiteConnection(strConection);
+        private void UpdateChart( List<Ingrediente> lista )
+        {
+            DataTable dtIngredientes = new DataTable();
+            dtIngredientes.Columns.Add("preco");
+            dtIngredientes.Columns.Add("data", typeof(DateTime));
 
+            for ( int i = 0; i < lista.Count; i++ )
+            {
+                dtIngredientes.Rows.Add();
+                dtIngredientes.Rows[i].SetField("preco", "R$ " + lista[i].Preco.ToString());
+                dtIngredientes.Rows[i].SetField("data", lista[i].Data.ToString());
+            }
+
+            dtIngredientes.DefaultView.Sort = "data ASC";
+            dtIngredientes = dtIngredientes.DefaultView.ToTable();
+
+            grafico.DataSource = dtIngredientes;
+
+            grafico.Series["Preço"].XValueMember = "data";
+            grafico.Series["Preço"].IsXValueIndexed = true;
+            grafico.Series["Preço"].YValueMembers = "preco";
+        }
+
+        private async void SelecionarData( DateTime data )
+        {
             try
             {
-                SQLiteCommand command = new SQLiteCommand();
-                command.Connection = con;
-                command.CommandText = "SELECT * FROM ingredientesHistorico WHERE nome LIKE @nome";
-                command.Parameters.AddWithValue("@nome", JanelaIngredientes.IngredienteHistorico);
+                var consumeApi = ClientHttp.Client.GetAsync($"historico-ingrediente/{JanelaIngredientes.IngredienteHistoricoId}", HttpCompletionOption.ResponseContentRead);
+                consumeApi.Wait();
 
-                DataTable temp = new DataTable();
-                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
+                var readData = consumeApi.Result;
 
-                con.Open();
+                var retorno = await Task.FromResult(consumeApi.Result.Content.ReadAsStringAsync());
+                var ingredientes = (JsonConvert.DeserializeObject<List<Ingrediente>>(retorno.Result));
+                List<Ingrediente> ingredientesData = new List<Ingrediente>(ingredientes.Where(x => DateTime.Parse(x.Data) > data));
+                ListaIngredientes.Clear();
+                ListaIngredientes.AddRange(ingredientesData);
 
-                adapter.Fill(temp);
-
-                command.Dispose();
-
-                con.Close();
-
-                temp.Columns.Remove("nome");
-                temp.Columns.Remove("quantidade");
-                temp.Columns.Remove("unidade");
-
-                DataTable ingredientes = new DataTable();
-                ingredientes.Columns.Add("preco");
-                ingredientes.Columns.Add("data", typeof(DateTime));
-
-
-                for (int i = 0; i < temp.Rows.Count; i++)
-                {
-                    ingredientes.Rows.Add();
-                    ingredientes.Rows[i].SetField("preco", temp.Rows[i][0].ToString());
-                    ingredientes.Rows[i].SetField("data", DateTime.Parse(temp.Rows[i][1].ToString(), new CultureInfo("pt-BR")));
-                }
-
-                ingredientes.DefaultView.Sort = "data ASC";
-                ingredientes = ingredientes.DefaultView.ToTable();
-
-                grafico.DataSource = ingredientes;
-
-                grafico.Series["Preço"].XValueMember = "data";
-                grafico.Series["Preço"].IsXValueIndexed = true;
-                grafico.Series["Preço"].YValueMembers = "preco";
-
-                dataView.Columns["data"].DefaultCellStyle.Format = "dd/MM/yyyy";
-
-                foreach (DataRow ingrediente in ingredientes.Rows)
-                {
-                    dataView.Rows.Add(ingrediente.ItemArray);
-                }
-
-                ingredientes.Dispose();
+                UpdateChart(ListaIngredientes);
+                UpdateDataView(ListaIngredientes);
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
-                MessageBox.Show("Erro ao ler dados da tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
-            }
-            finally
-            {
-                con.Close();
+                MessageBox.Show("Erro ao ler dados da tabela.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
             }
         }
 
-        private void BtnVoltar_Click(object sender, EventArgs e)
+        private void BtnVoltar_Click( object sender, EventArgs e )
         {
             Dispose();
             Close();
@@ -120,346 +118,34 @@ namespace Projeto_Brigadeiro
             t.Start();
         }
 
-        private void BtnCompleto_Click(object sender, EventArgs e)
+        private void BtnCompleto_Click( object sender, EventArgs e )
         {
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
-            try
-            {
-                SQLiteCommand command = new SQLiteCommand();
-                command.Connection = con;
-                command.CommandText = "SELECT * FROM ingredientesHistorico WHERE nome LIKE @nome";
-                command.Parameters.AddWithValue("@nome", JanelaIngredientes.IngredienteHistorico);
-
-                DataTable temp = new DataTable();
-                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
-
-                con.Open();
-
-                adapter.Fill(temp);
-
-                command.Dispose();
-
-                con.Close();
-
-                temp.Columns.Remove("nome");
-                temp.Columns.Remove("quantidade");
-                temp.Columns.Remove("unidade");
-
-                DataTable ingredientes = new DataTable();
-                ingredientes.Columns.Add("preco");
-                ingredientes.Columns.Add("data", typeof(DateTime));
-
-
-                for (int i = 0; i < temp.Rows.Count; i++)
-                {
-                    ingredientes.Rows.Add();
-                    ingredientes.Rows[i].SetField("preco", temp.Rows[i][0].ToString());
-                    ingredientes.Rows[i].SetField("data", DateTime.Parse(temp.Rows[i][1].ToString(), new CultureInfo("pt-BR")));
-                }
-
-                ingredientes.DefaultView.Sort = "data ASC";
-                ingredientes = ingredientes.DefaultView.ToTable();
-
-                grafico.DataSource = ingredientes;
-
-                grafico.Series["Preço"].XValueMember = "data";
-                grafico.Series["Preço"].IsXValueIndexed = true;
-                grafico.Series["Preço"].YValueMembers = "preco";
-
-                ingredientes.Dispose();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erro ao ler dados da tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
-            }
-            finally
-            {
-                con.Close();
-            }
+            DateTime data = DateTime.Now.AddYears(-100);
+            SelecionarData(data);
         }
 
-        private void BtnAno_Click(object sender, EventArgs e)
+        private void BtnAno_Click( object sender, EventArgs e )
         {
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
-            try
-            {
-                DateTime ano = DateTime.Now;
-                ano = ano.AddYears(-1);
-
-                SQLiteCommand command = new SQLiteCommand();
-                command.Connection = con;
-                command.CommandText = "SELECT * FROM ingredientesHistorico WHERE nome LIKE @nome";
-                command.Parameters.AddWithValue("@nome", JanelaIngredientes.IngredienteHistorico);
-
-                DataTable temp = new DataTable();
-                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
-
-                con.Open();
-
-                adapter.Fill(temp);
-
-                command.Dispose();
-
-                con.Close();
-
-                temp.Columns.Remove("nome");
-                temp.Columns.Remove("quantidade");
-                temp.Columns.Remove("unidade");
-
-                DataTable ingredientes = new DataTable();
-                ingredientes.Columns.Add("preco");
-                ingredientes.Columns.Add("data", typeof(DateTime));
-
-                int j = 0;
-
-                for (int i = 0; i < temp.Rows.Count; i++)
-                {
-                    if (ano < DateTime.Parse(temp.Rows[i][1].ToString(), new CultureInfo("pt-BR")))
-                    {
-                        ingredientes.Rows.Add();
-                        ingredientes.Rows[j].SetField("preco", temp.Rows[i][0].ToString());
-                        ingredientes.Rows[j].SetField("data", DateTime.Parse(temp.Rows[i][1].ToString(), new CultureInfo("pt-BR")));
-                        j++;
-                    }
-                }
-
-                ingredientes.DefaultView.Sort = "data ASC";
-                ingredientes = ingredientes.DefaultView.ToTable();
-
-                grafico.DataSource = ingredientes;
-
-                grafico.Series["Preço"].XValueMember = "data";
-                grafico.Series["Preço"].IsXValueIndexed = true;
-                grafico.Series["Preço"].YValueMembers = "preco";
-
-                ingredientes.Dispose();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erro ao ler dados da tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
-            }
-            finally
-            {
-                con.Close();
-            }
+            DateTime data = DateTime.Now.AddYears(-1);
+            SelecionarData(data);
         }
 
-        private void BtnSemestre_Click(object sender, EventArgs e)
+        private void BtnSemestre_Click( object sender, EventArgs e )
         {
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
-            try
-            {
-                DateTime semestre = DateTime.Now;
-                semestre = semestre.AddMonths(-6);
-
-                SQLiteCommand command = new SQLiteCommand();
-                command.Connection = con;
-                command.CommandText = "SELECT * FROM ingredientesHistorico WHERE nome LIKE @nome";
-                command.Parameters.AddWithValue("@nome", JanelaIngredientes.IngredienteHistorico);
-
-                DataTable temp = new DataTable();
-                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
-
-                con.Open();
-
-                adapter.Fill(temp);
-
-                command.Dispose();
-
-                con.Close();
-
-                temp.Columns.Remove("nome");
-                temp.Columns.Remove("quantidade");
-                temp.Columns.Remove("unidade");
-
-                DataTable ingredientes = new DataTable();
-                ingredientes.Columns.Add("preco");
-                ingredientes.Columns.Add("data", typeof(DateTime));
-
-                int j = 0;
-
-                for (int i = 0; i < temp.Rows.Count; i++)
-                {
-                    if (semestre < DateTime.Parse(temp.Rows[i][1].ToString(), new CultureInfo("pt-BR")))
-                    {
-                        ingredientes.Rows.Add();
-                        ingredientes.Rows[j].SetField("preco", temp.Rows[i][0].ToString());
-                        ingredientes.Rows[j].SetField("data", DateTime.Parse(temp.Rows[i][1].ToString(), new CultureInfo("pt-BR")));
-                        j++;
-                    }
-                }
-
-                ingredientes.DefaultView.Sort = "data ASC";
-                ingredientes = ingredientes.DefaultView.ToTable();
-
-                grafico.DataSource = ingredientes;
-
-                grafico.Series["Preço"].XValueMember = "data";
-                grafico.Series["Preço"].IsXValueIndexed = true;
-                grafico.Series["Preço"].YValueMembers = "preco";
-
-                ingredientes.Dispose();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erro ao ler dados da tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
-            }
-            finally
-            {
-                con.Close();
-            }
+            DateTime data = DateTime.Now.AddMonths(-6);
+            SelecionarData(data);
         }
 
-        private void BtnTrimestre_Click(object sender, EventArgs e)
+        private void BtnTrimestre_Click( object sender, EventArgs e )
         {
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
-            try
-            {
-                DateTime trimestre = DateTime.Now;
-                trimestre = trimestre.AddMonths(-3);
-
-                SQLiteCommand command = new SQLiteCommand();
-                command.Connection = con;
-                command.CommandText = "SELECT * FROM ingredientesHistorico WHERE nome LIKE @nome";
-                command.Parameters.AddWithValue("@nome", JanelaIngredientes.IngredienteHistorico);
-
-                DataTable temp = new DataTable();
-                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
-
-                con.Open();
-
-                adapter.Fill(temp);
-
-                command.Dispose();
-
-                con.Close();
-
-                temp.Columns.Remove("nome");
-                temp.Columns.Remove("quantidade");
-                temp.Columns.Remove("unidade");
-
-                DataTable ingredientes = new DataTable();
-                ingredientes.Columns.Add("preco");
-                ingredientes.Columns.Add("data", typeof(DateTime));
-
-                int j = 0;
-
-                for (int i = 0; i < temp.Rows.Count; i++)
-                {
-                    if (trimestre < DateTime.Parse(temp.Rows[i][1].ToString(), new CultureInfo("pt-BR")))
-                    {
-                        ingredientes.Rows.Add();
-                        ingredientes.Rows[j].SetField("preco", temp.Rows[i][0].ToString());
-                        ingredientes.Rows[j].SetField("data", DateTime.Parse(temp.Rows[i][1].ToString(), new CultureInfo("pt-BR")));
-                        j++;
-                    }
-                }
-
-                ingredientes.DefaultView.Sort = "data ASC";
-                ingredientes = ingredientes.DefaultView.ToTable();
-
-                grafico.DataSource = ingredientes;
-
-                grafico.Series["Preço"].XValueMember = "data";
-                grafico.Series["Preço"].IsXValueIndexed = true;
-                grafico.Series["Preço"].YValueMembers = "preco";
-
-                ingredientes.Dispose();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erro ao ler dados da tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
-            }
-            finally
-            {
-                con.Close();
-            }
+            DateTime data = DateTime.Now.AddMonths(-3);
+            SelecionarData(data);
         }
 
-        private void BtnMes_Click(object sender, EventArgs e)
+        private void BtnMes_Click( object sender, EventArgs e )
         {
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
-            try
-            {
-                DateTime mes = DateTime.Now;
-                mes = mes.AddMonths(-1);
-
-                SQLiteCommand command = new SQLiteCommand();
-                command.Connection = con;
-                command.CommandText = "SELECT * FROM ingredientesHistorico WHERE nome LIKE @nome";
-                command.Parameters.AddWithValue("@nome", JanelaIngredientes.IngredienteHistorico);
-
-                DataTable temp = new DataTable();
-                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
-
-                con.Open();
-
-                adapter.Fill(temp);
-
-                command.Dispose();
-
-                con.Close();
-
-                temp.Columns.Remove("nome");
-                temp.Columns.Remove("quantidade");
-                temp.Columns.Remove("unidade");
-
-                DataTable ingredientes = new DataTable();
-                ingredientes.Columns.Add("preco");
-                ingredientes.Columns.Add("data", typeof(DateTime));
-
-                int j = 0;
-
-                for (int i = 0; i < temp.Rows.Count; i++)
-                {
-                    if (mes < DateTime.Parse(temp.Rows[i][1].ToString(), new CultureInfo("pt-BR")))
-                    {
-                        ingredientes.Rows.Add();
-                        ingredientes.Rows[j].SetField("preco", temp.Rows[i][0].ToString());
-                        ingredientes.Rows[j].SetField("data", DateTime.Parse(temp.Rows[i][1].ToString(), new CultureInfo("pt-BR")));
-                        j++;
-                    }
-                }
-
-                ingredientes.DefaultView.Sort = "data ASC";
-                ingredientes = ingredientes.DefaultView.ToTable();
-
-                grafico.DataSource = ingredientes;
-
-                grafico.Series["Preço"].XValueMember = "data";
-                grafico.Series["Preço"].IsXValueIndexed = true;
-                grafico.Series["Preço"].YValueMembers = "preco";
-
-                ingredientes.Dispose();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erro ao ler dados da tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
-            }
-            finally
-            {
-                con.Close();
-            }
+            DateTime data = DateTime.Now.AddMonths(-1);
+            SelecionarData(data);
         }
     }
 }

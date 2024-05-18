@@ -36,8 +36,6 @@
             this.imgFundo = new System.Windows.Forms.PictureBox();
             this.grafico = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.dataView = new System.Windows.Forms.DataGridView();
-            this.preco = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.data = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.BtnVoltar = new System.Windows.Forms.Button();
             this.BtnMes = new System.Windows.Forms.Button();
             this.BtnTrimestre = new System.Windows.Forms.Button();
@@ -91,9 +89,6 @@
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dataView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.preco,
-            this.data});
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Gabriola", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -113,18 +108,6 @@
             this.dataView.Size = new System.Drawing.Size(416, 644);
             this.dataView.TabIndex = 2;
             this.dataView.TabStop = false;
-            // 
-            // preco
-            // 
-            this.preco.HeaderText = "Preço";
-            this.preco.Name = "preco";
-            this.preco.ReadOnly = true;
-            // 
-            // data
-            // 
-            this.data.HeaderText = "Data";
-            this.data.Name = "data";
-            this.data.ReadOnly = true;
             // 
             // BtnVoltar
             // 
@@ -241,8 +224,6 @@
         private System.Windows.Forms.PictureBox imgFundo;
         private System.Windows.Forms.DataVisualization.Charting.Chart grafico;
         private System.Windows.Forms.DataGridView dataView;
-        private System.Windows.Forms.DataGridViewTextBoxColumn preco;
-        private System.Windows.Forms.DataGridViewTextBoxColumn data;
         private System.Windows.Forms.Button BtnVoltar;
         private System.Windows.Forms.Button BtnMes;
         private System.Windows.Forms.Button BtnTrimestre;
