@@ -366,27 +366,8 @@ namespace Projeto_Brigadeiro
             {
                 txtIngrediente.Text = dataView.CurrentRow.Cells[1].Value.ToString();
                 txtQuantidade.Text = dataView.CurrentRow.Cells[2].Value.ToString();
+                comboUnidade.SelectedItem = (Unidade)dataView.CurrentRow.Cells[3].Value;
                 txtPreco.Text = "R$ " + dataView.CurrentRow.Cells[4].Value.ToString();
-
-                switch ( dataView.CurrentRow.Cells[3].Value.ToString() )
-                {
-                    case "gramas":
-                        comboUnidade.SelectedIndex = 0;
-                        break;
-                    case "Kilogramas":
-                        comboUnidade.SelectedIndex = 1;
-                        break;
-                    case "mililitros":
-                        comboUnidade.SelectedIndex = 2;
-                        break;
-                    case "Litros":
-                        comboUnidade.SelectedIndex = 3;
-                        break;
-                    case "unidades":
-                        comboUnidade.SelectedIndex = 4;
-                        break;
-                }
-
                 dataPicker.Value = DateTime.Parse(dataView.CurrentRow.Cells[5].Value.ToString());
             }
         }
