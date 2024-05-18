@@ -1,28 +1,31 @@
-﻿using Projeto_Brigadeiro.Class;
+﻿using Newtonsoft.Json;
+using Projeto_Brigadeiro.Class;
+using Projeto_Brigadeiro.Enums;
 using System;
-using System.Data;
-using System.Data.SQLite;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Projeto_Brigadeiro
 {
     public partial class JanelaUsuario : Form
     {
+        private static List<Usuario> ListaUsuarios = new List<Usuario>();
         public JanelaUsuario()
         {
             InitializeComponent();
         }
 
-        private void JanelaUsuario_Load(object sender, EventArgs e)
+        private async void JanelaUsuario_Load( object sender, EventArgs e )
         {
-            if (JanelaConfiguracoes.NomeUsuario != null)
+            ListaUsuarios.Clear();
+            comboTipo.DataSource = Enum.GetValues(typeof(TipoUsuario));
+
+            if ( JanelaConfiguracoes.NomeUsuario != null )
             {
-                string baseDados = BaseDados.LocalBaseDados();
-                string strConection = BaseDados.StrConnection(baseDados);
-
-                SQLiteConnection con = new SQLiteConnection(strConection);
-
-                switch (CadastroUsuario.UsuarioLogado.Tipo.ToString())
+                switch ( CadastroUsuario.UsuarioLogado.TipoUsuario.ToString() )
                 {
                     case "Master":
                         txtUsuario.Enabled = false;
@@ -35,132 +38,139 @@ namespace Projeto_Brigadeiro
 
                 try
                 {
-                    con.Open();
+                    var consumeApi = await Task.FromResult(ClientHttp.Client.GetAsync($"usuario/listar", HttpCompletionOption.ResponseContentRead));
 
-                    SQLiteCommand command = new SQLiteCommand();
-                    command.Connection = con;
-                    command.CommandText = "SELECT * FROM usuarios WHERE nome= @nome";
-                    command.Parameters.AddWithValue("@nome", JanelaConfiguracoes.NomeUsuario);
-
-                    SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
-                    DataTable dt = new DataTable();
-                    adapter.Fill(dt);
-
-                    if (dt.Rows.Count > 0)
+                    if ( consumeApi.Result.IsSuccessStatusCode )
                     {
-                        var reader = command.ExecuteReader();
-                        reader.Read();
-                        txtUsuario.Text = reader["nome"].ToString();
-                        txtSenha.Text = reader["senha"].ToString();
-                        string tipo = reader["tipo"].ToString();
+                        var retorno = await Task.FromResult(consumeApi.Result.Content.ReadAsStringAsync());
+                        var usuarios = (JsonConvert.DeserializeObject<List<Usuario>>(retorno.Result));
+                        ListaUsuarios.AddRange(usuarios.Where(x => x.Nome == JanelaConfiguracoes.NomeUsuario));
 
-                        switch (tipo)
+                        if ( ListaUsuarios.Count > 0 )
                         {
-                            case "Administrador":
-                                comboTipo.SelectedIndex = 0;
-                                break;
-                            case "Usuario":
-                                comboTipo.SelectedIndex = 1;
-                                break;
+                            txtUsuario.Text = ListaUsuarios[0].Nome.ToString();
+                            txtSenha.Text = ListaUsuarios[0].Senha.ToString();
+                            comboTipo.SelectedItem = ListaUsuarios[0].TipoUsuario;
                         }
-                        reader.Close();
+
+                        return;
                     }
 
-                    command.Dispose();
+                    string erro = consumeApi.Result.StatusCode.ToString();
+
+                    throw new Exception(erro);
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
-                    MessageBox.Show("Erro ao selecionar usuário no banco de dados\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
-                }
-                finally
-                {
-                    con.Close();
+                    MessageBox.Show("Erro ao selecionar usuário no banco de dados\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 }
             }
         }
 
-        private void BtnCancelar_Click(object sender, EventArgs e)
+        private void BtnCancelar_Click( object sender, EventArgs e )
         {
             Dispose();
             Close();
         }
 
-        private void BtnSalvar_Click(object sender, EventArgs e)
+        private void BtnSalvar_Click( object sender, EventArgs e )
         {
             string usuarioNome = txtUsuario.Text;
             string usuarioSenha = txtSenha.Text;
-            string usuarioTipo = comboTipo.Text;
+            TipoUsuario usuarioTipo = (TipoUsuario)comboTipo.SelectedItem;
 
-            if (usuarioNome == "" || usuarioSenha == "" || comboTipo.Text == "")
+            if ( usuarioNome == "" || usuarioSenha == "" || comboTipo.Text == "" )
             {
-                MessageBox.Show("Nome, senha e tipo de usuario obrigatórios.\n", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Nome, senha e tipo de usuário obrigatórios.\n", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                 return;
             }
 
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
-            if (JanelaConfiguracoes.NomeUsuario != null)
+            if ( JanelaConfiguracoes.NomeUsuario != null )
             {
                 try
                 {
-                    con.Open();
+                    Usuario usuario = ListaUsuarios.First(x => x.Nome == usuarioNome);
+                    Usuario usuarioAtualizado = usuario;
+                    usuarioAtualizado.Senha = usuarioSenha;
+                    usuarioAtualizado.TipoUsuario = usuarioTipo;
 
-                    SQLiteCommand command = new SQLiteCommand();
-                    command.Connection = con;
+                    if ( usuarioTipo.ToString() == "Master" )
+                    {
+                        if ( CadastroUsuario.UsuarioLogado.TipoUsuario.ToString() != "Master" )
+                        {
+                            MessageBox.Show("Apenas usuários Master podem criar outros usuários Master.\n", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                            return;
+                        }
+                    }
 
-                    command.CommandText = "UPDATE usuarios SET senha= @senha, tipo= @tipo WHERE nome= @nome";
-                    command.Parameters.AddWithValue("@nome", usuarioNome);
-                    command.Parameters.AddWithValue("@senha", usuarioSenha);
-                    command.Parameters.AddWithValue("@tipo", usuarioTipo);
+                    var consumeApi = ClientHttp.Client.PutAsJsonAsync<Usuario>("usuario", usuarioAtualizado);
+                    consumeApi.Wait();
 
-                    command.ExecuteNonQuery();
+                    var readData = consumeApi.Result;
 
-                    command.Dispose();
+                    if ( readData.IsSuccessStatusCode )
+                    {
+                        return;
+                    }
+
+                    string erro = readData.StatusCode.ToString();
+
+                    throw new Exception(erro);
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
-                    MessageBox.Show("Erro ao criar usuário no banco de dados\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                    MessageBox.Show("Erro ao criar usuário no banco de dados\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 }
                 finally
                 {
-                    con.Close();
+                    Dispose();
+                    Close();
                 }
             }
             else
             {
                 try
                 {
-                    con.Open();
-                    SQLiteCommand command = new SQLiteCommand();
-                    command.Connection = con;
-                    command.CommandText = "INSERT INTO usuarios (nome, senha, tipo) VALUES (@nome, @senha, @tipo)";
-                    command.Parameters.AddWithValue("@nome", usuarioNome);
-                    command.Parameters.AddWithValue("@senha", usuarioSenha);
-                    command.Parameters.AddWithValue("@tipo", usuarioTipo);
+                    Usuario usuario = new Usuario(usuarioNome, usuarioSenha, usuarioTipo);
 
-                    command.ExecuteNonQuery();
+                    if ( usuarioTipo.ToString() == "Master" )
+                    {
+                        if ( CadastroUsuario.UsuarioLogado.TipoUsuario.ToString() != "Master" )
+                        {
+                            MessageBox.Show("Apenas usuários Master podem criar outros usuários Master.\n", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                            return;
+                        }
+                    }
 
-                    command.Dispose();
+                    var consumeApi = ClientHttp.Client.PostAsJsonAsync<Usuario>("usuario", usuario);
+                    consumeApi.Wait();
+
+                    var readData = consumeApi.Result;
+
+                    if ( readData.IsSuccessStatusCode )
+                    {
+                        return;
+                    }
+
+                    string erro = readData.StatusCode.ToString();
+
+                    throw new Exception(erro);
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
-                    MessageBox.Show("Erro ao criar usuário no banco de dados\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                    MessageBox.Show("Erro ao criar usuário no banco de dados\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 }
                 finally
                 {
-                    con.Close();
+                    Dispose();
+                    Close();
                 }
             }
-            Dispose();
-            Close();
         }
 
-        private void CheckSenha_CheckedChanged(object sender, EventArgs e)
+        private void CheckSenha_CheckedChanged( object sender, EventArgs e )
         {
-            if (CheckSenha.Checked == true)
+            if ( CheckSenha.Checked == true )
             {
                 txtSenha.UseSystemPasswordChar = false;
             }

@@ -1,9 +1,14 @@
-﻿using Projeto_Brigadeiro.Class;
+﻿using Newtonsoft.Json;
+using Projeto_Brigadeiro.Class;
+using Projeto_Brigadeiro.Entities;
 using System;
+using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
 using System.Drawing;
+using System.Linq;
+using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Projeto_Brigadeiro
@@ -11,13 +16,15 @@ namespace Projeto_Brigadeiro
     public partial class JanelaConfiguracoes : Form
     {
         public static String NomeUsuario = null;
+        private static List<Usuario> ListaUsuarios = new List<Usuario>();
+        private static List<Usuario> ListaOrdenada;
 
         public JanelaConfiguracoes()
         {
             InitializeComponent();
         }
 
-        private void JanelaConfiguracoes_Load(object sender, EventArgs e)
+        private void JanelaConfiguracoes_Load( object sender, EventArgs e )
         {
             lblEnergia.Parent = imgFundo;
             lblEnergia.BackColor = Color.Transparent;
@@ -46,6 +53,7 @@ namespace Projeto_Brigadeiro
             lblLucro.Parent = imgFundo;
             lblLucro.BackColor = Color.Transparent;
 
+            ListaUsuarios.Clear();
             ListarTabela();
 
             txtEnergia.Enabled = false;
@@ -58,6 +66,16 @@ namespace Projeto_Brigadeiro
             txtLucro.Enabled = false;
 
             ListarCusto();
+        }
+
+        private void UpdateDataView( List<Usuario> lista )
+        {
+            ListaOrdenada = new List<Usuario>(lista.OrderBy(x => x.Nome));
+            this.dataView.DataSource = typeof(Ingrediente);
+            this.dataView.DataSource = ListaOrdenada;
+            this.dataView.Refresh();
+            this.dataView.Columns["Id"].Visible = false;
+            this.dataView.Columns["Senha"].Visible = false;
         }
 
         private void ListarCusto()
@@ -79,49 +97,32 @@ namespace Projeto_Brigadeiro
             txtCusto.Text = "R$ " + Custo.CalcularCustoSalario(custo.Dias, int.Parse(custo.Horas.Hour.ToString()), custo.CustoSalario).ToString("N2");
         }
 
-        private void ListarTabela()
+        private async void ListarTabela()
         {
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
             try
             {
-                SQLiteCommand command = new SQLiteCommand();
-                command.Connection = con;
-                command.CommandText = "SELECT * FROM usuarios";
+                var consumeApi = await Task.FromResult(ClientHttp.Client.GetAsync($"usuario/listar", HttpCompletionOption.ResponseContentRead));
 
-                DataTable ingredientes = new DataTable();
-                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
-
-                con.Open();
-
-                adapter.Fill(ingredientes);
-
-                command.Dispose();
-
-                ingredientes.Columns.Remove("usuario_id");
-                ingredientes.Columns.Remove("senha");
-
-                foreach (DataRow ingrediente in ingredientes.Rows)
+                if ( consumeApi.Result.IsSuccessStatusCode )
                 {
-                    dataView.Rows.Add(ingrediente.ItemArray);
+                    var retorno = await Task.FromResult(consumeApi.Result.Content.ReadAsStringAsync());
+                    var usuarios = (JsonConvert.DeserializeObject<List<Usuario>>(retorno.Result));
+                    ListaUsuarios.AddRange(usuarios);
+                    UpdateDataView(usuarios);
+                    return;
                 }
 
-                ingredientes.Dispose();
+                string erro = consumeApi.Result.StatusCode.ToString();
+
+                throw new Exception(erro);
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
-                MessageBox.Show("Erro ao ler dados da tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
-            }
-            finally
-            {
-                con.Close();
+                MessageBox.Show("Erro ao ler dados da tabela.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
             }
         }
 
-        private void BtnVoltar_Click(object sender, EventArgs e)
+        private void BtnVoltar_Click( object sender, EventArgs e )
         {
             Dispose();
             Close();
@@ -129,79 +130,75 @@ namespace Projeto_Brigadeiro
             t.Start();
         }
 
-        private void BtnNovo_Click(object sender, EventArgs e)
+        private void BtnNovo_Click( object sender, EventArgs e )
         {
+            if ( CadastroUsuario.UsuarioLogado.TipoUsuario.ToString() == "Usuario" )
+            {
+                MessageBox.Show("Usuário não possui permissão para alterar dados.", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                return;
+            }
             NomeUsuario = null;
             JanelaUsuario form = new JanelaUsuario();
             form.ShowDialog();
-            dataView.Rows.Clear();
             ListarTabela();
         }
 
-        private void BtnAlterarUsuario_Click(object sender, EventArgs e)
+        private void BtnAlterarUsuario_Click( object sender, EventArgs e )
         {
-            if (CadastroUsuario.UsuarioLogado.Tipo == "Usuario")
+            if ( CadastroUsuario.UsuarioLogado.TipoUsuario.ToString() == "Usuario" )
             {
-                MessageBox.Show("Usuário não possui permissão para alterar dados.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Usuário não possui permissão para alterar dados.", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                 return;
             }
             JanelaUsuario form = new JanelaUsuario();
             form.ShowDialog();
-            dataView.Rows.Clear();
             ListarTabela();
         }
 
-        private void BtnExcluir_Click(object sender, EventArgs e)
+        private void BtnExcluir_Click( object sender, EventArgs e )
         {
-            if (CadastroUsuario.UsuarioLogado.Tipo != "Master")
+            if ( CadastroUsuario.UsuarioLogado.TipoUsuario.ToString() != "Master" )
             {
-                MessageBox.Show("Usuário não possui permissão para excluir dados.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Usuário não possui permissão para excluir dados.", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                 return;
             }
 
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
             string usuarioNome = NomeUsuario;
 
-            if (usuarioNome == "")
+            if ( usuarioNome == "" )
             {
-                MessageBox.Show("Selecione o usuario para ser excluido.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Selecione o usuário para ser excluido.", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                 return;
             }
             else
             {
                 try
                 {
-                    con.Open();
+                    Usuario usuario = ListaUsuarios.First(x => x.Nome == usuarioNome);
 
-                    SQLiteCommand command = new SQLiteCommand();
-                    command.Connection = con;
-                    command.CommandText = "DELETE FROM usuarios WHERE nome= @nome";
-                    command.Parameters.AddWithValue("@nome", usuarioNome);
+                    var consumeApi = ClientHttp.Client.DeleteAsync("usuario/" + usuario.Id);
+                    consumeApi.Wait();
 
-                    command.ExecuteNonQuery();
+                    var readData = consumeApi.Result;
 
-                    command.Dispose();
+                    if ( readData.IsSuccessStatusCode )
+                    {
+                        ListarTabela();
+                        return;
+                    }
 
-                    dataView.Rows.Clear();
-                    ListarTabela();
+                    string erro = readData.StatusCode.ToString();
+
+                    throw new Exception(erro);
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
-                    MessageBox.Show("Erro ao excluir dados na tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                    MessageBox.Show("Erro ao excluir dados na tabela.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 }
-                finally
-                {
-                    con.Close();
-                }
-
             }
         }
 
-        private void BtnCancelar_Click(object sender, EventArgs e)
+        private void BtnCancelar_Click( object sender, EventArgs e )
         {
             ListarCusto();
 
@@ -215,9 +212,9 @@ namespace Projeto_Brigadeiro
             txtLucro.Enabled = false;
         }
 
-        private void BtnAtualizar_Click(object sender, EventArgs e)
+        private void BtnAtualizar_Click( object sender, EventArgs e )
         {
-            if (CadastroUsuario.UsuarioLogado.Tipo != "Usuario")
+            if ( CadastroUsuario.UsuarioLogado.TipoUsuario.ToString() != "Usuario" )
             {
                 txtEnergia.Enabled = true;
                 txtAgua.Enabled = true;
@@ -230,22 +227,22 @@ namespace Projeto_Brigadeiro
             }
             else
             {
-                MessageBox.Show("Usuário não possui permissão para atualizar dados.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Usuário não possui permissão para atualizar dados.", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             }
         }
 
-        private void BtnSalvar_Click(object sender, EventArgs e)
+        private void BtnSalvar_Click( object sender, EventArgs e )
         {
-            if (txtEnergia.Enabled == false)
+            if ( txtEnergia.Enabled == false )
             {
                 return;
             }
             else
             {
-                float custoEnergia = float.Parse(txtEnergia.Text.Remove(0, 3));
-                float custoAgua = float.Parse(txtAgua.Text.Remove(0, 3));
-                float custoGas = float.Parse(txtGas.Text.Remove(0, 3));
-                float custoSalario = float.Parse(txtSalario.Text.Remove(0, 3));
+                decimal custoEnergia = decimal.Parse(txtEnergia.Text.Remove(0, 3));
+                decimal custoAgua = decimal.Parse(txtAgua.Text.Remove(0, 3));
+                decimal custoGas = decimal.Parse(txtGas.Text.Remove(0, 3));
+                decimal custoSalario = decimal.Parse(txtSalario.Text.Remove(0, 3));
                 int dias = int.Parse(txtDias.Text);
                 int horas = int.Parse(txtHoras.Text);
                 DateTime dateTime = new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, horas, 0, 0);
@@ -269,20 +266,23 @@ namespace Projeto_Brigadeiro
             txtLucro.Enabled = false;
         }
 
-        private void dataView_SelectionChanged(object sender, EventArgs e)
+        private void dataView_SelectionChanged( object sender, EventArgs e )
         {
-            NomeUsuario = dataView.CurrentRow.Cells["nome"].Value.ToString();
+            if ( dataView.Focused )
+            {
+                NomeUsuario = dataView.CurrentRow.Cells["Nome"].Value.ToString();
+            }
         }
 
-        private void TxtPreco_KeyPress(object sender, KeyPressEventArgs e)
+        private void TxtPreco_KeyPress( object sender, KeyPressEventArgs e )
         {
-            if (char.IsDigit(e.KeyChar))
+            if ( char.IsDigit(e.KeyChar) )
             {
                 TextBox t = (TextBox)sender;
                 t.Text = t.Text.Remove(0, 3);
                 int cursorPosition = t.Text.Length - t.SelectionStart;
 
-                if (t.Text.Length < 20)
+                if ( t.Text.Length < 20 )
                 {
                     t.Text = (float.Parse(t.Text.Insert(cursorPosition, e.KeyChar.ToString()).Replace(",", "").Replace(".", "")) / 100).ToString("N2");
                 }
@@ -293,9 +293,9 @@ namespace Projeto_Brigadeiro
             e.Handled = true;
         }
 
-        private void TxtPreco_KeyDown(object sender, KeyEventArgs e)
+        private void TxtPreco_KeyDown( object sender, KeyEventArgs e )
         {
-            if (e.KeyCode == Keys.Back)
+            if ( e.KeyCode == Keys.Back )
             {
                 TextBox t = (TextBox)sender;
                 t.Text = t.Text.Remove(0, 3);
@@ -305,7 +305,7 @@ namespace Projeto_Brigadeiro
                 string Left = t.Text.Substring(0, t.Text.Length - cursorPosition).Replace(".", "").Replace(",", "");
                 string Right = t.Text.Substring(t.Text.Length - cursorPosition).Replace(".", "").Replace(",", "");
 
-                if (Left.Length > 0)
+                if ( Left.Length > 0 )
                 {
                     Left = Left.Remove(Left.Length - 1);
                     t.Text = (decimal.Parse(Left + Right) / 100).ToString("N2");
@@ -316,15 +316,15 @@ namespace Projeto_Brigadeiro
             }
         }
 
-        private void TxtQuantidade_KeyPress(object sender, KeyPressEventArgs e)
+        private void TxtQuantidade_KeyPress( object sender, KeyPressEventArgs e )
         {
-            if (char.IsDigit(e.KeyChar))
+            if ( char.IsDigit(e.KeyChar) )
             {
                 TextBox t = (TextBox)sender;
                 t.SelectionStart = 0;
                 int cursorPosition = t.Text.Length - t.SelectionStart;
 
-                if (t.Text.Length < 20)
+                if ( t.Text.Length < 20 )
                 {
                     t.Text = (decimal.Parse(t.Text.Insert(cursorPosition, e.KeyChar.ToString()))).ToString("N0");
                 }
@@ -334,15 +334,15 @@ namespace Projeto_Brigadeiro
             e.Handled = true;
         }
 
-        private void TxtQuantidade_KeyDown(object sender, KeyEventArgs e)
+        private void TxtQuantidade_KeyDown( object sender, KeyEventArgs e )
         {
-            if (e.KeyCode == Keys.Back)
+            if ( e.KeyCode == Keys.Back )
             {
                 TextBox t = (TextBox)sender;
 
                 string Left = t.Text.Substring(0, t.Text.Length).Replace(".", "").Replace(",", "");
 
-                if (Left.Length > 1)
+                if ( Left.Length > 1 )
                 {
                     Left = Left.Remove(Left.Length - 1);
                     t.Text = (float.Parse(Left)).ToString("N0");
