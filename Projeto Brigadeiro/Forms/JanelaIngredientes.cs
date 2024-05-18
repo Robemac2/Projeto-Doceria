@@ -16,7 +16,8 @@ namespace Projeto_Brigadeiro
 {
     public partial class JanelaIngredientes : Form
     {
-        public static string IngredienteHistorico;
+        public static string IngredienteHistoricoId;
+        public static string IngredienteHistoricoNome;
         private static List<Ingrediente> ListaIngredientes = new List<Ingrediente>();
         private static List<Ingrediente> ListaOrdenada;
         public JanelaIngredientes()
@@ -400,11 +401,12 @@ namespace Projeto_Brigadeiro
 
         private async void BtnHistorico_Click( object sender, EventArgs e )
         {
-            IngredienteHistorico = dataView.CurrentRow.Cells[1].Value.ToString();
+            IngredienteHistoricoId = dataView.CurrentRow.Cells[0].Value.ToString();
+            IngredienteHistoricoNome = dataView.CurrentRow.Cells[1].Value.ToString();
 
             try
             {
-                Ingrediente ingrediente = ListaIngredientes.First(x => x.Nome == IngredienteHistorico);
+                Ingrediente ingrediente = ListaIngredientes.First(x => x.Id == int.Parse(IngredienteHistoricoId));
 
                 var consumeApi = ClientHttp.Client.GetAsync($"historico-ingrediente/{ingrediente.Id}", HttpCompletionOption.ResponseContentRead);
                 consumeApi.Wait();
@@ -422,10 +424,12 @@ namespace Projeto_Brigadeiro
                         return;
                     }
                 }
+                else
+                {
+                    string erro = readData.StatusCode.ToString();
 
-                string erro = readData.StatusCode.ToString();
-
-                throw new Exception(erro);
+                    throw new Exception(erro);
+                }
             }
             catch ( Exception ex )
             {
