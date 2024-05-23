@@ -382,49 +382,52 @@ namespace Projeto_Brigadeiro
 
         private async void BtnHistorico_Click( object sender, EventArgs e )
         {
-            IngredienteHistoricoId = dataView.CurrentRow.Cells[0].Value.ToString();
-            IngredienteHistoricoNome = dataView.CurrentRow.Cells[1].Value.ToString();
-
-            try
+            if ( txtIngrediente.Text != string.Empty )
             {
-                Ingrediente ingrediente = ListaIngredientes.First(x => x.Id == int.Parse(IngredienteHistoricoId));
+                IngredienteHistoricoId = dataView.CurrentRow.Cells[0].Value.ToString();
+                IngredienteHistoricoNome = dataView.CurrentRow.Cells[1].Value.ToString();
 
-                var consumeApi = ClientHttp.Client.GetAsync($"historico-ingrediente/{ingrediente.Id}", HttpCompletionOption.ResponseContentRead);
-                consumeApi.Wait();
-
-                var readData = consumeApi.Result;
-
-                if ( readData.IsSuccessStatusCode )
+                try
                 {
-                    var retorno = await Task.FromResult(consumeApi.Result.Content.ReadAsStringAsync());
-                    var ingredientes = (JsonConvert.DeserializeObject<List<Ingrediente>>(retorno.Result));
+                    Ingrediente ingrediente = ListaIngredientes.First(x => x.Id == int.Parse(IngredienteHistoricoId));
 
-                    if ( ingredientes.Count == 0 )
+                    var consumeApi = ClientHttp.Client.GetAsync($"historico-ingrediente/{ingrediente.Id}", HttpCompletionOption.ResponseContentRead);
+                    consumeApi.Wait();
+
+                    var readData = consumeApi.Result;
+
+                    if ( readData.IsSuccessStatusCode )
                     {
-                        MessageBox.Show("Não existe histórico para o ingrediente selecionado.\n", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
-                        return;
+                        var retorno = await Task.FromResult(consumeApi.Result.Content.ReadAsStringAsync());
+                        var ingredientes = (JsonConvert.DeserializeObject<List<Ingrediente>>(retorno.Result));
+
+                        if ( ingredientes.Count == 0 )
+                        {
+                            MessageBox.Show("Não existe histórico para o ingrediente selecionado.\n", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        string erro = readData.StatusCode.ToString();
+
+                        throw new Exception(erro);
                     }
                 }
-                else
+                catch ( Exception ex )
                 {
-                    string erro = readData.StatusCode.ToString();
-
-                    throw new Exception(erro);
+                    MessageBox.Show("Erro ao acessar o banco de dados.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                 }
-            }
-            catch ( Exception ex )
-            {
-                MessageBox.Show("Erro ao acessar o banco de dados.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
-            }
-            finally
-            {
+                finally
+                {
 
-            }
+                }
 
-            Thread t = new Thread(() => Application.Run(new JanelaHistorico()));
-            t.Start();
-            Dispose();
-            Close();
+                Thread t = new Thread(() => Application.Run(new JanelaHistorico()));
+                t.Start();
+                Dispose();
+                Close();
+            }
         }
     }
 }
