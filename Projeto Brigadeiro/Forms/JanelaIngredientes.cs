@@ -315,7 +315,7 @@ namespace Projeto_Brigadeiro
                 }
                 catch ( Exception ex )
                 {
-                    MessageBox.Show("Erro ao excluir dados na tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                    MessageBox.Show("Erro ao excluir dados na tabela.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 }
                 finally
                 {
@@ -331,7 +331,7 @@ namespace Projeto_Brigadeiro
 
             if ( ingredienteNome == "" )
             {
-                MessageBox.Show("Informe o ingrediente a ser pesquisado.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Informe o ingrediente a ser pesquisado.", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                 return;
             }
             else
