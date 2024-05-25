@@ -154,6 +154,7 @@
     <Compile Include="Class\ClientHttp.cs" />
     <Compile Include="Class\Custo.cs" />
     <Compile Include="Entities\Ingrediente.cs" />
+    <Compile Include="Entities\Receita.cs" />
     <Compile Include="Enums\TipoUsuario.cs" />
     <Compile Include="Enums\Unidade.cs" />
     <Compile Include="Forms\JanelaIngredientes.cs">
