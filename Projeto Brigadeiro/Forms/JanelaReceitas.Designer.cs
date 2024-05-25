@@ -41,12 +41,6 @@
             this.BtnExcluir = new System.Windows.Forms.Button();
             this.BtnNovaReceita = new System.Windows.Forms.Button();
             this.BtnAtualizar = new System.Windows.Forms.Button();
-            this.receita = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.tempoPreparoHora = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.tempoPreparoMinuto = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.preco = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.rendimento = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.precoUnitario = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.imgFundo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataView)).BeginInit();
             this.SuspendLayout();
@@ -143,13 +137,6 @@
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dataView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.receita,
-            this.tempoPreparoHora,
-            this.tempoPreparoMinuto,
-            this.preco,
-            this.rendimento,
-            this.precoUnitario});
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Gabriola", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -213,42 +200,6 @@
             this.BtnAtualizar.UseVisualStyleBackColor = false;
             this.BtnAtualizar.Click += new System.EventHandler(this.BtnAtualizar_Click);
             // 
-            // receita
-            // 
-            this.receita.HeaderText = "Receita";
-            this.receita.Name = "receita";
-            this.receita.ReadOnly = true;
-            // 
-            // tempoPreparoHora
-            // 
-            this.tempoPreparoHora.HeaderText = "Tempo de Preparo H";
-            this.tempoPreparoHora.Name = "tempoPreparoHora";
-            this.tempoPreparoHora.ReadOnly = true;
-            // 
-            // tempoPreparoMinuto
-            // 
-            this.tempoPreparoMinuto.HeaderText = "Tempo de Preparo M";
-            this.tempoPreparoMinuto.Name = "tempoPreparoMinuto";
-            this.tempoPreparoMinuto.ReadOnly = true;
-            // 
-            // preco
-            // 
-            this.preco.HeaderText = "Preço";
-            this.preco.Name = "preco";
-            this.preco.ReadOnly = true;
-            // 
-            // rendimento
-            // 
-            this.rendimento.HeaderText = "Rendimento";
-            this.rendimento.Name = "rendimento";
-            this.rendimento.ReadOnly = true;
-            // 
-            // precoUnitario
-            // 
-            this.precoUnitario.HeaderText = "Preço Unitário";
-            this.precoUnitario.Name = "precoUnitario";
-            this.precoUnitario.ReadOnly = true;
-            // 
             // JanelaReceitas
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -289,11 +240,5 @@
         private System.Windows.Forms.Button BtnExcluir;
         private System.Windows.Forms.Button BtnNovaReceita;
         private System.Windows.Forms.Button BtnAtualizar;
-        private System.Windows.Forms.DataGridViewTextBoxColumn receita;
-        private System.Windows.Forms.DataGridViewTextBoxColumn tempoPreparoHora;
-        private System.Windows.Forms.DataGridViewTextBoxColumn tempoPreparoMinuto;
-        private System.Windows.Forms.DataGridViewTextBoxColumn preco;
-        private System.Windows.Forms.DataGridViewTextBoxColumn rendimento;
-        private System.Windows.Forms.DataGridViewTextBoxColumn precoUnitario;
     }
 }
