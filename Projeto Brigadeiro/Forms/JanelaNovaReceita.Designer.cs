@@ -33,10 +33,6 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(JanelaNovaReceita));
             this.BtnVoltar = new System.Windows.Forms.Button();
             this.dataView = new System.Windows.Forms.DataGridView();
-            this.ingrediente = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quantidade = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.unidade = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.preco = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.comboUnidade = new System.Windows.Forms.ComboBox();
             this.lblUnidade = new System.Windows.Forms.Label();
             this.txtQuantidade = new System.Windows.Forms.TextBox();
@@ -93,11 +89,6 @@
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dataView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.ingrediente,
-            this.quantidade,
-            this.unidade,
-            this.preco});
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Gabriola", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -118,30 +109,6 @@
             this.dataView.TabIndex = 20;
             this.dataView.TabStop = false;
             this.dataView.SelectionChanged += new System.EventHandler(this.dataView_SelectionChanged);
-            // 
-            // ingrediente
-            // 
-            this.ingrediente.HeaderText = "Ingrediente";
-            this.ingrediente.Name = "ingrediente";
-            this.ingrediente.ReadOnly = true;
-            // 
-            // quantidade
-            // 
-            this.quantidade.HeaderText = "Quantidade";
-            this.quantidade.Name = "quantidade";
-            this.quantidade.ReadOnly = true;
-            // 
-            // unidade
-            // 
-            this.unidade.HeaderText = "Unidade";
-            this.unidade.Name = "unidade";
-            this.unidade.ReadOnly = true;
-            // 
-            // preco
-            // 
-            this.preco.HeaderText = "Preço";
-            this.preco.Name = "preco";
-            this.preco.ReadOnly = true;
             // 
             // comboUnidade
             // 
@@ -368,7 +335,6 @@
             this.txtHora.Name = "txtHora";
             this.txtHora.Size = new System.Drawing.Size(91, 40);
             this.txtHora.TabIndex = 48;
-            this.txtHora.TextChanged += new System.EventHandler(this.txtHora_TextChanged);
             this.txtHora.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TxtQuantidade_KeyDown);
             this.txtHora.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtRendimento_KeyPress);
             // 
@@ -381,7 +347,6 @@
             this.txtMinuto.Name = "txtMinuto";
             this.txtMinuto.Size = new System.Drawing.Size(91, 40);
             this.txtMinuto.TabIndex = 49;
-            this.txtMinuto.TextChanged += new System.EventHandler(this.txtMinuto_TextChanged);
             this.txtMinuto.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TxtQuantidade_KeyDown);
             this.txtMinuto.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtRendimento_KeyPress);
             // 
@@ -447,10 +412,6 @@
         private System.Windows.Forms.Button BtnLimpar;
         private System.Windows.Forms.TextBox txtReceita;
         private System.Windows.Forms.Label lblNomeReceita;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ingrediente;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quantidade;
-        private System.Windows.Forms.DataGridViewTextBoxColumn unidade;
-        private System.Windows.Forms.DataGridViewTextBoxColumn preco;
         private System.Windows.Forms.TextBox txtHora;
         private System.Windows.Forms.TextBox txtMinuto;
     }

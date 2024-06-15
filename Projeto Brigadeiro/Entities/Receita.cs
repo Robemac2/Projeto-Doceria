@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
 
 namespace Projeto_Brigadeiro.Entities
 {
@@ -12,7 +11,7 @@ namespace Projeto_Brigadeiro.Entities
         public string Nome { get; set; }
 
         [JsonProperty("tempoDePreparo")]
-        public DateTime TempoDePreparo { get; set; }
+        public string TempoDePreparo { get; set; }
 
         [JsonProperty("preco")]
         public decimal Preco { get; set; }
@@ -23,7 +22,7 @@ namespace Projeto_Brigadeiro.Entities
         [JsonProperty("precoUnitario")]
         public decimal PrecoUnitario { get; set; }
 
-        public Receita( string nome, DateTime tempoDePreparo, decimal preco, int rendimento, decimal precoUnitario )
+        public Receita( string nome, string tempoDePreparo, decimal preco, int rendimento, decimal precoUnitario )
         {
             this.Nome = nome;
             this.TempoDePreparo = tempoDePreparo;

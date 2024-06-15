@@ -1,19 +1,26 @@
-﻿using Projeto_Brigadeiro.Class;
+﻿using Newtonsoft.Json;
+using Projeto_Brigadeiro.Class;
+using Projeto_Brigadeiro.Entities;
+using Projeto_Brigadeiro.Enums;
 using System;
-using System.ComponentModel;
+using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
 using System.Drawing;
+using System.Linq;
+using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Projeto_Brigadeiro
 {
     public partial class JanelaNovaReceita : Form
     {
-        private int _primeiraAtualizacaoHora = 0;
-        private int _primeiraAtualizacaoMinuto = 0;
-        private bool _ativarDataGrid = false;
+        private List<Ingrediente> ListaIngredientes = new List<Ingrediente>();
+        private List<Receita_Ingrediente> receita_Ingredientes = new List<Receita_Ingrediente>(); // Lista que será salva no banco
+        private List<Receita_Ingrediente_Exibicao> receita_Ingredientes_Exibicao = new List<Receita_Ingrediente_Exibicao>(); //Lista de ingredientes para exibição
+        private static List<Receita_Ingrediente_Exibicao> ListaOrdenada;
+        private static Custo custo = Custo.CarregarCusto();
         public int _receitaId;
         public bool _ehAtualizacao = false;
 
@@ -22,7 +29,7 @@ namespace Projeto_Brigadeiro
             InitializeComponent();
         }
 
-        private void JanelaNovaReceita_Load(object sender, EventArgs e)
+        private void JanelaNovaReceita_Load( object sender, EventArgs e )
         {
             lblIngrediente.Parent = imgFundo;
             lblIngrediente.BackColor = Color.Transparent;
@@ -40,144 +47,123 @@ namespace Projeto_Brigadeiro
             lblNomeReceita.BackColor = Color.Transparent;
 
             txtCusto.Text = "R$ " + 0.ToString("N2");
+            txtHora.Text = 0.ToString();
+            txtMinuto.Text = 0.ToString();
+
+            comboUnidade.DataSource = Enum.GetValues(typeof(Unidade));
+
+            ListaIngredientes.Clear();
+            receita_Ingredientes.Clear();
+            receita_Ingredientes_Exibicao.Clear();
 
             ListarIngredientes();
+            comboIngrediente.DataSource = ListaIngredientes;
+            comboIngrediente.DisplayMember = "nome";
+
             AtualizarReceita();
-            _ativarDataGrid = true;
-            AtualizarDataGrid();
+            AtualizarCusto();
         }
 
-        private void AtualizarReceita()
+        private async void AtualizarReceita()
         {
-            if (_ehAtualizacao)
+            if ( _ehAtualizacao )
             {
-                string baseDados = BaseDados.LocalBaseDados();
-                string strConection = BaseDados.StrConnection(baseDados);
-
-                SQLiteConnection con = new SQLiteConnection(strConection);
+                List<Receita> ListaReceitas = new List<Receita>();
 
                 try
                 {
-                    con.Open();
+                    var consumeApi = await Task.FromResult(ClientHttp.Client.GetAsync($"receita", HttpCompletionOption.ResponseContentRead));
 
-                    SQLiteCommand command = new SQLiteCommand();
-                    command.Connection = con;
-                    command.CommandText = "SELECT * FROM receitas_ingredientes WHERE receita_id= @receita_id";
-                    command.Parameters.AddWithValue("@receita_id", _receitaId);
-
-                    command.ExecuteNonQuery();
-
-                    DataTable ingredientes = new DataTable();
-                    SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
-
-                    adapter.Fill(ingredientes);
-
-                    command.Dispose();
-
-                    con.Close();
-
-                    string baseDados2 = BaseDados.LocalBaseDados();
-                    string strConection2 = BaseDados.StrConnection(baseDados2);
-
-                    SQLiteConnection con2 = new SQLiteConnection(strConection2);
-
-                    con2.Open();
-
-                    SQLiteCommand command2 = new SQLiteCommand();
-                    command2.Connection = con2;
-                    command2.CommandText = "SELECT * FROM receitas WHERE receita_id= @receita_id";
-                    command2.Parameters.AddWithValue("@receita_id", _receitaId);
-
-                    command2.ExecuteNonQuery();
-
-                    DataTable ingredientes2 = new DataTable();
-                    SQLiteDataAdapter adapter2 = new SQLiteDataAdapter(command2);
-
-                    adapter2.Fill(ingredientes2);
-
-                    command2.Dispose();
-
-                    con2.Close();
-
-                    _primeiraAtualizacaoHora = 1;
-                    _primeiraAtualizacaoMinuto = 1;
-
-                    txtReceita.Text = ingredientes2.Rows[0]["nome"].ToString();
-                    txtHora.Text = ingredientes2.Rows[0]["tempoPreparoHora"].ToString();
-                    txtMinuto.Text = ingredientes2.Rows[0]["tempoPreparoMinuto"].ToString();
-                    txtRendimento.Text = ingredientes2.Rows[0]["rendimento"].ToString();
-                    txtCusto.Text = ingredientes2.Rows[0]["preco"].ToString();
-
-                    for (int i = 0; i < ingredientes.Rows.Count; i++)
+                    if ( consumeApi.Result.IsSuccessStatusCode )
                     {
-                        string baseDados3 = BaseDados.LocalBaseDados();
-                        string strConection3 = BaseDados.StrConnection(baseDados3);
+                        var retorno = await Task.FromResult(consumeApi.Result.Content.ReadAsStringAsync());
+                        var receitas = (JsonConvert.DeserializeObject<List<Receita>>(retorno.Result));
+                        ListaReceitas.AddRange(receitas);
+                    }
+                    else
+                    {
+                        string erro = consumeApi.Result.StatusCode.ToString();
 
-                        SQLiteConnection con3 = new SQLiteConnection(strConection3);
-
-                        con3.Open();
-
-                        SQLiteCommand command3 = new SQLiteCommand();
-                        command3.Connection = con3;
-                        command3.CommandText = "SELECT * FROM ingredientes WHERE ingrediente_id= @ingrediente_id";
-                        command3.Parameters.AddWithValue("@ingrediente_id", int.Parse(ingredientes.Rows[i]["ingrediente_id"].ToString()));
-
-                        command3.ExecuteNonQuery();
-
-                        DataTable ingredientes3 = new DataTable();
-                        SQLiteDataAdapter adapter3 = new SQLiteDataAdapter(command3);
-
-                        adapter3.Fill(ingredientes3);
-
-                        command3.Dispose();
-
-                        con3.Close();
-
-                        dataView.Rows.Add();
-
-                        dataView.Rows[i].Cells["ingrediente"].Value = ingredientes3.Rows[0]["nome"].ToString();
-                        dataView.Rows[i].Cells["quantidade"].Value = ingredientes.Rows[i]["quantidade"].ToString();
-                        dataView.Rows[i].Cells["unidade"].Value = ingredientes.Rows[i]["unidade"].ToString();
-                        dataView.Rows[i].Cells["preco"].Value = ingredientes.Rows[i]["preco"].ToString();
+                        throw new Exception(erro);
                     }
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
-                    MessageBox.Show("Erro ao consultar dados na tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                    MessageBox.Show("Erro ao ler receitas da tabela.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 }
-                finally
+
+                Receita receita = ListaReceitas.Find(x => x.Id == _receitaId);
+
+                txtReceita.Text = receita.Nome;
+                txtHora.Text = receita.TempoDePreparo.Substring(0, 2);
+                txtMinuto.Text = receita.TempoDePreparo.Substring(3, 2);
+                txtRendimento.Text = receita.Rendimento.ToString();
+
+                try
                 {
-                    con.Close();
+                    var consumeApi = await Task.FromResult(ClientHttp.Client.GetAsync($"receita-ingrediente/{receita.Id}", HttpCompletionOption.ResponseContentRead));
+
+                    if ( consumeApi.Result.IsSuccessStatusCode )
+                    {
+                        var retorno = await Task.FromResult(consumeApi.Result.Content.ReadAsStringAsync());
+                        var receitaIngredientes = (JsonConvert.DeserializeObject<List<Receita_Ingrediente>>(retorno.Result));
+                        receita_Ingredientes.AddRange(receitaIngredientes);
+                    }
+                    else
+                    {
+                        string erro = consumeApi.Result.StatusCode.ToString();
+
+                        throw new Exception(erro);
+                    }
                 }
+                catch ( Exception ex )
+                {
+                    MessageBox.Show("Erro ao ler ingredientes da tabela.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                }
+
+                foreach ( Receita_Ingrediente ingrediente in receita_Ingredientes )
+                {
+                    Ingrediente ingredienteObj = ListaIngredientes.Find(x => x.Id == ingrediente.IngredienteId);
+                    Receita_Ingrediente_Exibicao receita_Ingrediente_Exibicao = new Receita_Ingrediente_Exibicao(ingredienteObj.Nome, ingrediente.Quantidade, ingrediente.Unidade, ingrediente.Preco);
+                    receita_Ingredientes_Exibicao.Add(receita_Ingrediente_Exibicao);
+                }
+
+                Limpar();
+                UpdateDataView(receita_Ingredientes_Exibicao);
             }
         }
 
-        private void AtualizarDataGrid()
+        private void UpdateDataView( List<Receita_Ingrediente_Exibicao> lista )
         {
-            if (dataView.Rows.Count > 0)
+            ListaOrdenada = new List<Receita_Ingrediente_Exibicao>(lista.OrderBy(x => x.Nome));
+            this.dataView.DataSource = typeof(Receita_Ingrediente);
+            this.dataView.DataSource = ListaOrdenada;
+            this.dataView.Refresh();
+            AtualizarCusto();
+        }
+
+        private void AtualizarCusto()
+        {
+            if ( dataView.Rows.Count > 0 )
             {
-                Custo custo = Custo.CarregarCusto();
-
-                this.dataView.Sort(this.dataView.Columns["ingrediente"], ListSortDirection.Ascending);
-
-                float soma = 0;
-                float minuto = float.Parse(txtMinuto.Text) == 0f ? 0f : float.Parse(txtMinuto.Text) / 60f;
-                float hora = float.Parse(txtHora.Text) + minuto;
+                decimal soma = 0;
+                decimal minuto = decimal.Parse(txtMinuto.Text) == 0m ? 0m : decimal.Parse(txtMinuto.Text) / 60m;
+                decimal hora = decimal.Parse(txtHora.Text) + minuto;
 
                 soma += Custo.CalcularCustoEnergia(custo.CustoEnergia) * hora;
                 soma += Custo.CalcularCustoAgua(custo.CustoAgua) * hora;
                 soma += Custo.CalcularCustoGas(custo.CustoGas) * hora;
                 soma += Custo.CalcularCustoSalario(custo.Dias, int.Parse(custo.Horas.Hour.ToString()), custo.CustoSalario) * hora;
 
-                foreach (DataGridViewRow item in dataView.Rows)
+                foreach ( Receita_Ingrediente_Exibicao ingrediente in receita_Ingredientes_Exibicao )
                 {
-                    soma += float.Parse(item.Cells["preco"].Value.ToString().Remove(0, 3));
+                    soma += ingrediente.Preco;
                 }
 
                 soma *= Custo.CalcularCustoGeral(custo.CustoGeral);
                 soma *= Custo.CalcularLucro(custo.Lucro);
 
-                txtCusto.Text = "R$ " + float.Parse(soma.ToString("N2"));
+                txtCusto.Text = "R$ " + decimal.Parse(soma.ToString("N2"));
             }
         }
 
@@ -186,57 +172,42 @@ namespace Projeto_Brigadeiro
             comboUnidade.SelectedIndex = 0;
             comboIngrediente.SelectedIndex = 0;
             txtQuantidade.Text = 0.ToString("N0");
-            txtHora.Text = 0.ToString();
-            txtMinuto.Text = 0.ToString();
         }
 
-        private void ListarIngredientes()
+        private async void ListarIngredientes()
         {
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
-
             try
             {
-                con.Open();
+                var consumeApi = await Task.FromResult(ClientHttp.Client.GetAsync($"ingrediente", HttpCompletionOption.ResponseContentRead));
 
-                SQLiteCommand command = new SQLiteCommand();
-                command.Connection = con;
-                command.CommandText = "SELECT * FROM ingredientes ORDER BY nome";
+                if ( consumeApi.Result.IsSuccessStatusCode )
+                {
+                    var retorno = await Task.FromResult(consumeApi.Result.Content.ReadAsStringAsync());
+                    var ingredientes = (JsonConvert.DeserializeObject<List<Ingrediente>>(retorno.Result));
+                    ListaIngredientes.AddRange(ingredientes);
 
-                command.ExecuteNonQuery();
+                    return;
+                }
 
-                DataTable ingredientes = new DataTable();
-                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
+                string erro = consumeApi.Result.StatusCode.ToString();
 
-                adapter.Fill(ingredientes);
-
-                command.Dispose();
-
-                comboIngrediente.DataSource = ingredientes;
-                comboIngrediente.DisplayMember = "nome";
-
+                throw new Exception(erro);
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
-                MessageBox.Show("Erro ao consultar dados na tabela.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
-            }
-            finally
-            {
-                con.Close();
+                MessageBox.Show("Erro ao consultar dados na tabela.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
             }
         }
 
-        private void TxtQuantidade_KeyPress(object sender, KeyPressEventArgs e)
+        private void TxtQuantidade_KeyPress( object sender, KeyPressEventArgs e )
         {
-            if (char.IsDigit(e.KeyChar))
+            if ( char.IsDigit(e.KeyChar) )
             {
                 TextBox t = (TextBox)sender;
                 t.SelectionStart = 0;
                 int cursorPosition = t.Text.Length - t.SelectionStart;
 
-                if (t.Text.Length < 20)
+                if ( t.Text.Length < 20 )
                 {
                     t.Text = (decimal.Parse(t.Text.Insert(cursorPosition, e.KeyChar.ToString()))).ToString("N0");
                 }
@@ -246,15 +217,15 @@ namespace Projeto_Brigadeiro
             e.Handled = true;
         }
 
-        private void TxtQuantidade_KeyDown(object sender, KeyEventArgs e)
+        private void TxtQuantidade_KeyDown( object sender, KeyEventArgs e )
         {
-            if (e.KeyCode == Keys.Back)
+            if ( e.KeyCode == Keys.Back )
             {
                 TextBox t = (TextBox)sender;
 
                 string Left = t.Text.Substring(0, t.Text.Length).Replace(".", "").Replace(",", "");
 
-                if (Left.Length > 1)
+                if ( Left.Length > 1 )
                 {
                     Left = Left.Remove(Left.Length - 1);
                     t.Text = (float.Parse(Left)).ToString("N0");
@@ -267,15 +238,15 @@ namespace Projeto_Brigadeiro
             }
         }
 
-        private void TxtRendimento_KeyPress(object sender, KeyPressEventArgs e)
+        private void TxtRendimento_KeyPress( object sender, KeyPressEventArgs e )
         {
-            if (char.IsDigit(e.KeyChar))
+            if ( char.IsDigit(e.KeyChar) )
             {
                 TextBox t = (TextBox)sender;
                 t.SelectionStart = 0;
                 int cursorPosition = t.Text.Length - t.SelectionStart;
 
-                if (t.Text.Length < 20)
+                if ( t.Text.Length < 20 )
                 {
                     t.Text = (decimal.Parse(t.Text.Insert(cursorPosition, e.KeyChar.ToString()))).ToString("N0");
                 }
@@ -285,15 +256,15 @@ namespace Projeto_Brigadeiro
             e.Handled = true;
         }
 
-        private void TxtRendimento_KeyDown(object sender, KeyEventArgs e)
+        private void TxtRendimento_KeyDown( object sender, KeyEventArgs e )
         {
-            if (e.KeyCode == Keys.Back)
+            if ( e.KeyCode == Keys.Back )
             {
                 TextBox t = (TextBox)sender;
 
                 string Left = t.Text.Substring(0, t.Text.Length).Replace(".", "").Replace(",", "");
 
-                if (Left.Length > 1)
+                if ( Left.Length > 1 )
                 {
                     Left = Left.Remove(Left.Length - 1);
                     t.Text = (float.Parse(Left)).ToString("N0");
@@ -306,174 +277,184 @@ namespace Projeto_Brigadeiro
             }
         }
 
-        private void BtnRemover_Click(object sender, EventArgs e)
+        private void BtnRemover_Click( object sender, EventArgs e )
         {
-            DialogResult resultado = MessageBox.Show("Você tem certexa que deseja remover o ingredientes?\n\n" + dataView.CurrentRow.Cells["ingrediente"].Value.ToString(), "SQLite", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
-            if (resultado == DialogResult.No)
+            DialogResult resultado = MessageBox.Show("Você tem certexa que deseja remover o ingredientes?\n\n" + dataView.CurrentRow.Cells["nome"].Value.ToString(), "Projeto Brigadeiro", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+            if ( resultado == DialogResult.No )
             {
                 return;
             }
 
-            dataView.Rows.RemoveAt(dataView.CurrentCell.RowIndex);
+            receita_Ingredientes_Exibicao.Remove(receita_Ingredientes_Exibicao.Find(x => x.Nome == dataView.CurrentRow.Cells["nome"].Value.ToString()));
+            int ingredienteId = ListaIngredientes.Find(x => x.Nome == dataView.CurrentRow.Cells["nome"].Value.ToString()).Id;
+            receita_Ingredientes.Remove(receita_Ingredientes.Find(x => x.Id == ingredienteId));
 
-            AtualizarDataGrid();
+            UpdateDataView(receita_Ingredientes_Exibicao);
             Limpar();
         }
 
-        private void BtnAdicionar_Click(object sender, EventArgs e)
+        private void BtnAdicionar_Click( object sender, EventArgs e )
         {
-            string ingrediente = comboIngrediente.Text;
-            string quantidade = txtQuantidade.Text;
-            string unidade = comboUnidade.Text;
-            string preco = BaseDados.PrecoIngrediente(ingrediente, quantidade, unidade);
+            int quantidade = int.Parse(txtQuantidade.Text);
 
-            if (preco != "Conversão Indevida")
+            if ( quantidade == 0 )
             {
-                bool ingredienteExiste = false;
-                int index = -1;
-
-                foreach (DataGridViewRow item in dataView.Rows)
-                {
-                    if (item.Cells[0].Value != null && item.Cells[0].Value.ToString() == ingrediente)
-                    {
-                        ingredienteExiste = true;
-                        index = item.Cells[0].RowIndex;
-                        break;
-                    }
-                }
-
-                if (ingredienteExiste)
-                {
-                    dataView.Rows.RemoveAt(index);
-                }
-
-                dataView.Rows.Add(ingrediente, quantidade, unidade, preco);
-
-                Limpar();
-                AtualizarDataGrid();
-
+                MessageBox.Show("Informe a quantidade do ingrediente.", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                 return;
             }
 
-            MessageBox.Show("Erro ao calcular o preço do ingrediente.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+            string ingrediente = comboIngrediente.Text;
+            Unidade unidade = (Unidade)comboUnidade.SelectedItem;
+            decimal preco = PrecoIngrediente(ingrediente, quantidade, unidade);
+
+            if ( preco < 0 )
+            {
+                MessageBox.Show("Erro ao calcular o preço do ingrediente.", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                return;
+            }
+
+            Receita_Ingrediente_Exibicao receita_Ingrediente_Exibicao = new Receita_Ingrediente_Exibicao(ingrediente, quantidade, unidade, preco);
+            receita_Ingredientes_Exibicao.Add(receita_Ingrediente_Exibicao);
+            UpdateDataView(receita_Ingredientes_Exibicao);
+
+            Limpar();
+            AtualizarCusto();
         }
 
-        private void BtnSalvar_Click(object sender, EventArgs e)
+        private async void BtnSalvar_Click( object sender, EventArgs e )
         {
-            string baseDados = BaseDados.LocalBaseDados();
-            string strConection = BaseDados.StrConnection(baseDados);
-
-            SQLiteConnection con = new SQLiteConnection(strConection);
+            if ( txtReceita.Text == string.Empty || txtHora.Text == string.Empty || txtMinuto.Text == string.Empty || txtRendimento.Text == string.Empty )
+            {
+                MessageBox.Show("Preencha todos os campos.", "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                return;
+            }
 
             string receitaNome = txtReceita.Text;
+            DateTime receitaTempoPreparo = new DateTime(1, 1, 1, int.Parse(txtHora.Text), int.Parse(txtMinuto.Text), 0);
+            string receitaTempoPreparoString = receitaTempoPreparo.ToString("HH:mm:ss");
             int receitaRendimento = int.Parse(txtRendimento.Text);
-            string receitaPreco = txtCusto.Text;
+            decimal receitaPreco = decimal.Parse(txtCusto.Text.Replace("R$ ", ""));
+            decimal receitaPrecoUnitario = receitaPreco / receitaRendimento;
 
-            if (receitaNome == "" || receitaRendimento == 0 || receitaPreco == "R$ 0,00")
+            Receita receita = new Receita(receitaNome, receitaTempoPreparoString, receitaPreco, receitaRendimento, receitaPrecoUnitario);
+
+            if ( !_ehAtualizacao )
             {
-                MessageBox.Show("Todos os dados são de preenchimento obrigatório.", "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
-                return;
+                try
+                {
+                    var consumeApi = ClientHttp.Client.PostAsJsonAsync<Receita>("receita", receita);
+                    consumeApi.Wait();
+
+                    var readData = consumeApi.Result;
+
+                    if ( !readData.IsSuccessStatusCode )
+                    {
+                        string erro = readData.StatusCode.ToString();
+
+                        throw new Exception(erro);
+                    }
+
+                }
+                catch ( Exception ex )
+                {
+                    MessageBox.Show("Erro ao salvar receita na tabela.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                }
             }
             else
             {
                 try
                 {
-                    con.Open();
+                    var consumeApi = ClientHttp.Client.PutAsJsonAsync<Receita>("receita", receita);
+                    consumeApi.Wait();
 
-                    SQLiteCommand command = new SQLiteCommand();
-                    command.Connection = con;
+                    var readData = consumeApi.Result;
 
-                    if (_ehAtualizacao)
+                    if ( !readData.IsSuccessStatusCode )
                     {
-                        command.CommandText = "UPDATE receitas SET tempoPreparoHora= @tempoPreparoHora,"
-                                              + "tempoPreparoMinuto= @tempoPreparoMinuto, preco= @preco, rendimento= @rendimento "
-                                              + "WHERE nome= @nome";
-                        command.Parameters.AddWithValue("@nome", receitaNome);
-                        command.Parameters.AddWithValue("@tempoPreparoHora", txtHora.Text);
-                        command.Parameters.AddWithValue("@tempoPreparoMinuto", txtMinuto.Text);
-                        command.Parameters.AddWithValue("@preco", receitaPreco);
-                        command.Parameters.AddWithValue("@rendimento", receitaRendimento);
-                    }
-                    else
-                    {
-                        command.CommandText = "INSERT INTO receitas (nome, tempoPreparoHora, tempoPreparoMinuto, preco, rendimento) "
-                                          + "VALUES (@nome, @tempoPreparoHora, @tempoPreparoMinuto, @preco, @rendimento)";
-                        command.Parameters.AddWithValue("@nome", receitaNome);
-                        command.Parameters.AddWithValue("@tempoPreparoHora", txtHora.Text);
-                        command.Parameters.AddWithValue("@tempoPreparoMinuto", txtMinuto.Text);
-                        command.Parameters.AddWithValue("@preco", receitaPreco);
-                        command.Parameters.AddWithValue("@rendimento", receitaRendimento);
+                        string erro = readData.StatusCode.ToString();
+
+                        throw new Exception(erro);
                     }
 
-                    command.ExecuteNonQuery();
-
-                    command.CommandText = "SELECT * FROM receitas WHERE nome= @nome";
-                    command.Parameters.AddWithValue("@nome", receitaNome);
-
-                    DataTable ingredientes = new DataTable();
-                    SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
-
-                    adapter.Fill(ingredientes);
-
-                    int receitaId = int.Parse(ingredientes.Rows[0]["receita_id"].ToString());
-
-                    con.Close();
-
-                    foreach (DataGridViewRow row in dataView.Rows)
-                    {
-                        string baseDados2 = BaseDados.LocalBaseDados();
-                        string strConection2 = BaseDados.StrConnection(baseDados);
-
-                        SQLiteConnection con2 = new SQLiteConnection(strConection);
-
-                        SQLiteCommand command2 = new SQLiteCommand();
-                        command2.Connection = con2;
-
-                        con2.Open();
-
-                        command2.CommandText = "SELECT * FROM ingredientes WHERE nome= @nome";
-                        string ingredienteNome = row.Cells["ingrediente"].Value.ToString();
-                        command2.Parameters.AddWithValue("@nome", ingredienteNome);
-
-                        DataTable ingredientes2 = new DataTable();
-                        SQLiteDataAdapter adapter2 = new SQLiteDataAdapter(command2);
-
-                        adapter2.Fill(ingredientes2);
-
-                        if (_ehAtualizacao)
-                        {
-                            command2.CommandText = "UPDATE receitas_ingredientes SET quantidade= @quantidade, unidade= @unidade, preco= @preco "
-                                          + "WHERE receita_id= @receita_id AND ingrediente_id= @ingrediente_id";
-                            command2.Parameters.AddWithValue("@receita_id", receitaId);
-                            command2.Parameters.AddWithValue("@ingrediente_id", int.Parse(ingredientes2.Rows[0]["ingrediente_id"].ToString()));
-                            command2.Parameters.AddWithValue("@quantidade", int.Parse(row.Cells["quantidade"].Value.ToString()));
-                            command2.Parameters.AddWithValue("@unidade", row.Cells["unidade"].Value.ToString());
-                            command2.Parameters.AddWithValue("@preco", row.Cells["preco"].Value.ToString());
-                        }
-                        else
-                        {
-                            command2.CommandText = "INSERT INTO receitas_ingredientes (receita_id, ingrediente_id, quantidade, unidade, preco) "
-                                          + "VALUES (@receita_id, @ingrediente_id, @quantidade, @unidade, @preco)";
-                            command2.Parameters.AddWithValue("@receita_id", receitaId);
-                            command2.Parameters.AddWithValue("@ingrediente_id", int.Parse(ingredientes2.Rows[0]["ingrediente_id"].ToString()));
-                            command2.Parameters.AddWithValue("@quantidade", int.Parse(row.Cells["quantidade"].Value.ToString()));
-                            command2.Parameters.AddWithValue("@unidade", row.Cells["unidade"].Value.ToString());
-                            command2.Parameters.AddWithValue("@preco", row.Cells["preco"].Value.ToString());
-                        }
-
-                        command2.ExecuteNonQuery();
-
-                        con2.Close();
-                    }
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
-                    MessageBox.Show("Erro ao salvar receita.\n" + ex, "SQLite", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                    MessageBox.Show("Erro ao atualizar receita na tabela.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 }
-                finally
+            }
+
+            List<Receita> ListaReceitas = new List<Receita>();
+
+            try
+            {
+                var consumeApi = await Task.FromResult(ClientHttp.Client.GetAsync($"receita", HttpCompletionOption.ResponseContentRead));
+
+                if ( consumeApi.Result.IsSuccessStatusCode )
                 {
-                    con.Close();
+                    var retorno = await Task.FromResult(consumeApi.Result.Content.ReadAsStringAsync());
+                    var receitas = (JsonConvert.DeserializeObject<List<Receita>>(retorno.Result));
+                    ListaReceitas.AddRange(receitas);
                 }
+                else
+                {
+                    string erro = consumeApi.Result.StatusCode.ToString();
+
+                    throw new Exception(erro);
+                }
+            }
+            catch ( Exception ex )
+            {
+                MessageBox.Show("Erro ao ler receitas da tabela.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+            }
+
+            int receitaId = ListaReceitas.Find(x => x.Nome == receitaNome).Id;
+
+            foreach ( Receita_Ingrediente_Exibicao ingrediente in receita_Ingredientes_Exibicao )
+            {
+                Receita_Ingrediente receita_Ingrediente = new Receita_Ingrediente(receitaId, ListaIngredientes.Find(x => x.Nome == ingrediente.Nome).Id, ingrediente.Quantidade, ingrediente.Unidade, ingrediente.Preco);
+                receita_Ingredientes.Add(receita_Ingrediente);
+            }
+
+            if ( _ehAtualizacao )
+            {
+                try
+                {
+                    var consumeApi = ClientHttp.Client.DeleteAsync("receitaingrediente/" + receita.Id);
+                    consumeApi.Wait();
+
+                    var readData = consumeApi.Result;
+
+                    if ( !readData.IsSuccessStatusCode )
+                    {
+                        string erro = readData.StatusCode.ToString();
+
+                        throw new Exception(erro);
+                    }
+
+                }
+                catch ( Exception ex )
+                {
+                    MessageBox.Show("Erro ao deletar ingredientes antigos da receita.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                }
+            }
+
+            try
+            {
+                var consumeApi = ClientHttp.Client.PostAsJsonAsync<List<Receita_Ingrediente>>("receita-ingrediente", receita_Ingredientes);
+                consumeApi.Wait();
+
+                var readData = consumeApi.Result;
+
+                if ( !readData.IsSuccessStatusCode )
+                {
+                    string erro = readData.StatusCode.ToString();
+
+                    throw new Exception(erro);
+                }
+            }
+            catch ( Exception ex )
+            {
+                MessageBox.Show("Erro ao salvar ingredientes da receita.\n" + ex, "Projeto Brigadeiro", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
             }
 
             Dispose();
@@ -482,7 +463,7 @@ namespace Projeto_Brigadeiro
             t.Start();
         }
 
-        private void BtnVoltar_Click(object sender, EventArgs e)
+        private void BtnVoltar_Click( object sender, EventArgs e )
         {
             Dispose();
             Close();
@@ -490,63 +471,58 @@ namespace Projeto_Brigadeiro
             t.Start();
         }
 
-        private void BtnLimpar_Click(object sender, EventArgs e)
+        private void BtnLimpar_Click( object sender, EventArgs e )
         {
             Limpar();
+            AtualizarCusto();
         }
 
-        private void dataView_SelectionChanged(object sender, EventArgs e)
+        private void dataView_SelectionChanged( object sender, EventArgs e )
         {
-            if (_ativarDataGrid)
+            if ( dataView.Focused )
             {
-                if (dataView.Rows.Count == 0)
-                {
-                    Limpar();
-                    return;
-                }
-                comboIngrediente.SelectedIndex = comboIngrediente.FindStringExact(dataView.CurrentRow.Cells["ingrediente"].Value.ToString());
+                comboIngrediente.SelectedIndex = comboIngrediente.FindStringExact(dataView.CurrentRow.Cells["nome"].Value.ToString());
                 txtQuantidade.Text = dataView.CurrentRow.Cells["quantidade"].Value.ToString();
-
-                switch (dataView.CurrentRow.Cells["unidade"].Value.ToString())
-                {
-                    case "gramas":
-                        comboUnidade.SelectedIndex = 0;
-                        break;
-                    case "Kilogramas":
-                        comboUnidade.SelectedIndex = 1;
-                        break;
-                    case "mililitros":
-                        comboUnidade.SelectedIndex = 2;
-                        break;
-                    case "Litros":
-                        comboUnidade.SelectedIndex = 3;
-                        break;
-                    case "unidades":
-                        comboUnidade.SelectedIndex = 4;
-                        break;
-                }
+                comboUnidade.SelectedItem = (Unidade)dataView.CurrentRow.Cells["unidade"].Value;
             }
         }
 
-        private void txtHora_TextChanged(object sender, EventArgs e)
+        private decimal PrecoIngrediente( string nome, int quantidade, Unidade unidade )
         {
-            if (_primeiraAtualizacaoHora == 0)
+            decimal preco = -1;
+            decimal precoIngrediente = ListaIngredientes.Find(x => x.Nome == nome).Preco / ListaIngredientes.Find(x => x.Nome == nome).Quantidade;
+            Unidade unidadeIngrediente = ListaIngredientes.Find(x => x.Nome == nome).Unidade;
+
+            if ( unidadeIngrediente == unidade )
             {
-                _primeiraAtualizacaoHora = 1;
-                return;
+                preco = precoIngrediente * quantidade;
+            }
+            else if ( unidadeIngrediente == Unidade.gramas && unidade == Unidade.Kilogramas )
+            {
+                preco = precoIngrediente * quantidade / 1000;
+            }
+            else if ( unidadeIngrediente == Unidade.Kilogramas && unidade == Unidade.gramas )
+            {
+                preco = precoIngrediente * quantidade * 1000;
+            }
+            else if ( unidadeIngrediente == Unidade.mililitros && unidade == Unidade.Litros )
+            {
+                preco = precoIngrediente * quantidade / 1000;
+            }
+            else if ( unidadeIngrediente == Unidade.Litros && unidade == Unidade.mililitros )
+            {
+                preco = precoIngrediente * quantidade * 1000;
+            }
+            else if ( unidadeIngrediente == Unidade.Metros && unidade == Unidade.centimetros )
+            {
+                preco = precoIngrediente * quantidade * 100;
+            }
+            else if ( unidadeIngrediente == Unidade.centimetros && unidade == Unidade.Metros )
+            {
+                preco = precoIngrediente * quantidade / 100;
             }
 
-            AtualizarDataGrid();
-        }
-
-        private void txtMinuto_TextChanged(object sender, EventArgs e)
-        {
-            if (_primeiraAtualizacaoMinuto == 0)
-            {
-                _primeiraAtualizacaoMinuto = 1;
-                return;
-            }
-            AtualizarDataGrid();
+            return decimal.Round(preco, 2);
         }
     }
 }
