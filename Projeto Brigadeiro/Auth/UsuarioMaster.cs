@@ -49,6 +49,7 @@ namespace Projeto_Brigadeiro
             {
                 Dispose();
                 Close();
+                Custo.CriarCusto();
             }
         }
         private void CheckSenha_CheckedChanged( object sender, EventArgs e )

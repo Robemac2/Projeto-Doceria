@@ -25,8 +25,8 @@ namespace Projeto_Brigadeiro
             CheckSenha.Parent = imgFundo;
             CheckSenha.BackColor = Color.Transparent;
 
-            PrimeiroUso.ChecarPrimeiroUso();
             ClientHttp clientHttp = new ClientHttp();
+            PrimeiroUso.ChecarPrimeiroUso();
         }
 
         private void BtnEntrar_Click( object sender, EventArgs e )
